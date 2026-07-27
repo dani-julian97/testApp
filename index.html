@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Mi App</title>
+
+  <link rel="manifest" href="manifest.json">
+
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Configuración específica para iPhone -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Mi App">
+
+  <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+
+<body>
+  <h1>Mi primera app</h1>
+
+  <p id="contador">0</p>
+
+  <button onclick="incrementar()">Sumar</button>
+
+  <script>
+    let contador = Number(localStorage.getItem("contador")) || 0;
+
+    document.getElementById("contador").textContent = contador;
+
+    function incrementar() {
+      contador++;
+      localStorage.setItem("contador", contador);
+      document.getElementById("contador").textContent = contador;
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(() => console.log("Service Worker registrado"))
+        .catch(error => console.error("Error:", error));
+    }
+  </script>
+</body>
+</html>
