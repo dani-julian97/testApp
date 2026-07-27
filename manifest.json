@@ -1,16 +1,16 @@
 {
-    "name": "Mi primera aplicación",
-    "short_name": "Mi App",
-    "description": "Una aplicación web instalable",
-    "start_url": "./",
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#ffffff",
-    "icons": [
-      {
-        "src": "icon-192.png",
-        "sizes": "192x192",
-        "type": "image/png"
-      }
-    ]
-  }
+  "name": "Pulse — Contador",
+  "short_name": "Pulse",
+  "description": "Un contador elegante que guarda tu progreso",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#061416",
+  "theme_color": "#0d7377",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

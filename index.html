@@ -2,45 +2,188 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-  <title>Mi App</title>
+  <title>Pulse — Mi App</title>
 
   <link rel="manifest" href="manifest.json">
-
-  <meta name="theme-color" content="#ffffff">
-
-  <!-- Configuración específica para iPhone -->
+  <meta name="theme-color" content="#061416">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Mi App">
-
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pulse">
   <link rel="apple-touch-icon" href="icon-192.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-  <h1>Mi primera app</h1>
+  <!-- Epic splash / loading -->
+  <div class="splash" id="splash" aria-live="polite" aria-busy="true">
+    <div class="splash__aurora" aria-hidden="true"></div>
+    <div class="splash__grid" aria-hidden="true"></div>
+    <div class="splash__orb splash__orb--outer" aria-hidden="true"></div>
+    <div class="splash__orb" aria-hidden="true"></div>
 
-  <p id="contador">0</p>
+    <div class="splash__core">
+      <div class="splash__logo" aria-hidden="true">
+        <div class="splash__logo-bg"></div>
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+          <circle cx="12" cy="12" r="3.5"/>
+        </svg>
+      </div>
 
-  <button onclick="incrementar()">Sumar</button>
+      <h1 class="splash__title">Pulse</h1>
+      <p class="splash__subtitle">Tu contador</p>
+
+      <div class="splash__progress">
+        <div class="splash__track">
+          <div class="splash__bar" id="splashBar"></div>
+        </div>
+        <p class="splash__status" id="splashStatus">Iniciando</p>
+      </div>
+    </div>
+
+    <div class="splash__wipe" aria-hidden="true"></div>
+  </div>
+
+  <!-- Main app -->
+  <main class="app" id="app">
+    <div class="app__bg" aria-hidden="true"></div>
+
+    <header class="brand">
+      <div class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+          <circle cx="12" cy="12" r="3.5"/>
+        </svg>
+      </div>
+      <h1 class="brand__name">Pulse</h1>
+      <p class="brand__tag">Cuenta lo que importa</p>
+    </header>
+
+    <section class="counter" aria-label="Contador">
+      <div class="counter__stage">
+        <div class="counter__ring" aria-hidden="true"></div>
+        <div>
+          <p class="counter__label">Total</p>
+          <p class="counter__value" id="contador" aria-live="polite">0</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn btn--ghost" id="btnReset" aria-label="Reiniciar contador">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 12a9 9 0 1 0 3-6.7"/>
+            <path d="M3 4v5h5"/>
+          </svg>
+          Reset
+        </button>
+        <button type="button" class="btn btn--primary" id="btnSumar" aria-label="Sumar uno">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Sumar
+        </button>
+      </div>
+    </section>
+
+    <p class="hint">Se guarda en este dispositivo</p>
+  </main>
 
   <script>
-    let contador = Number(localStorage.getItem("contador")) || 0;
+    (function () {
+      const STORAGE_KEY = "contador";
+      const statusMessages = [
+        "Iniciando",
+        "Preparando interfaz",
+        "Cargando datos",
+        "Casi listo",
+        "Listo"
+      ];
 
-    document.getElementById("contador").textContent = contador;
+      const splash = document.getElementById("splash");
+      const splashBar = document.getElementById("splashBar");
+      const splashStatus = document.getElementById("splashStatus");
+      const app = document.getElementById("app");
+      const valueEl = document.getElementById("contador");
+      const btnSumar = document.getElementById("btnSumar");
+      const btnReset = document.getElementById("btnReset");
 
-    function incrementar() {
-      contador++;
-      localStorage.setItem("contador", contador);
-      document.getElementById("contador").textContent = contador;
-    }
+      let contador = Number(localStorage.getItem(STORAGE_KEY)) || 0;
+      valueEl.textContent = contador;
 
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js")
-        .then(() => console.log("Service Worker registrado"))
-        .catch(error => console.error("Error:", error));
-    }
+      function bumpValue() {
+        valueEl.classList.remove("is-bump");
+        void valueEl.offsetWidth;
+        valueEl.classList.add("is-bump");
+        setTimeout(() => valueEl.classList.remove("is-bump"), 350);
+      }
+
+      function incrementar() {
+        contador++;
+        localStorage.setItem(STORAGE_KEY, contador);
+        valueEl.textContent = contador;
+        bumpValue();
+      }
+
+      function resetear() {
+        contador = 0;
+        localStorage.setItem(STORAGE_KEY, contador);
+        valueEl.textContent = contador;
+        bumpValue();
+      }
+
+      btnSumar.addEventListener("click", incrementar);
+      btnReset.addEventListener("click", resetear);
+
+      /* ── Epic loading sequence ── */
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const duration = reduceMotion ? 200 : 2600;
+      const start = performance.now();
+
+      function finishSplash() {
+        splash.classList.add("is-exiting");
+        splash.setAttribute("aria-busy", "false");
+
+        setTimeout(() => {
+          splash.classList.add("is-done");
+          app.classList.add("is-ready");
+          document.querySelector('meta[name="theme-color"]')
+            ?.setAttribute("content", "#eaf3f5");
+        }, reduceMotion ? 0 : 480);
+      }
+
+      function tick(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const pct = Math.round(eased * 100);
+
+        splashBar.style.width = pct + "%";
+        const idx = Math.min(
+          statusMessages.length - 1,
+          Math.floor(eased * statusMessages.length)
+        );
+        splashStatus.textContent = statusMessages[idx];
+
+        if (t < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          finishSplash();
+        }
+      }
+
+      requestAnimationFrame(tick);
+
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("service-worker.js")
+          .then(() => console.log("Service Worker registrado"))
+          .catch((error) => console.error("Error:", error));
+      }
+    })();
   </script>
 </body>
 </html>
