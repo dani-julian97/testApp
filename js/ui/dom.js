@@ -1,9 +1,13 @@
-/** Tiny DOM helpers to keep screens readable. */
+/** Tiny DOM helpers */
 export function el(tag, props = {}, children = []) {
   const node = document.createElement(tag);
-  const { className, dataset, attrs, events, ...rest } = props;
+  const { className, dataset, attrs, events, style, html, text, ...rest } = props;
 
   if (className) node.className = className;
+  if (html != null) node.innerHTML = html;
+  if (text != null) node.textContent = text;
+  if (typeof style === "string") node.setAttribute("style", style);
+  else if (style && typeof style === "object") Object.assign(node.style, style);
 
   if (dataset) {
     Object.entries(dataset).forEach(([k, v]) => {
@@ -26,10 +30,7 @@ export function el(tag, props = {}, children = []) {
   }
 
   Object.entries(rest).forEach(([k, v]) => {
-    if (k === "text") node.textContent = v;
-    else if (k === "html") node.innerHTML = v;
-    else if (k === "style" && typeof v === "string") node.setAttribute("style", v);
-    else if (v != null) node[k] = v;
+    if (v != null) node[k] = v;
   });
 
   const list = Array.isArray(children) ? children : [children];

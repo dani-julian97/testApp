@@ -1,22 +1,17 @@
-/**
- * Minimal pub/sub store for onboarding state.
- */
+import { loadOnboarding, saveOnboarding, clearOnboarding, DEFAULT_STATE } from "./storage.js";
+import { CORE_HABITS } from "../data/habits.js";
+
 const listeners = new Set();
 
-const state = {
-  screen: "welcome", // welcome | login | signup | quiz | ready
-  quizStep: 0,
-  answers: {},
-  direction: 1
-};
+let state = loadOnboarding();
+
+function emit() {
+  saveOnboarding(state);
+  listeners.forEach((fn) => fn(state));
+}
 
 export function getState() {
   return state;
-}
-
-export function setState(partial) {
-  Object.assign(state, partial);
-  listeners.forEach((fn) => fn(state));
 }
 
 export function subscribe(fn) {
@@ -24,18 +19,69 @@ export function subscribe(fn) {
   return () => listeners.delete(fn);
 }
 
+export function setStep(index) {
+  state = { ...state, currentStep: Math.max(0, index) };
+  emit();
+}
+
 export function setAnswer(questionId, value) {
-  state.answers = { ...state.answers, [questionId]: value };
-  listeners.forEach((fn) => fn(state));
+  state = {
+    ...state,
+    answers: { ...state.answers, [questionId]: value }
+  };
+  emit();
 }
 
 export function getAnswer(questionId) {
   return state.answers[questionId];
 }
 
-export function resetQuiz() {
-  state.quizStep = 0;
-  state.answers = {};
-  state.direction = 1;
-  listeners.forEach((fn) => fn(state));
+export function getAge() {
+  return Number(state.answers.age) || 29;
+}
+
+export function toggleHabit(habitId) {
+  const set = new Set(state.selectedHabitIds);
+  if (set.has(habitId)) set.delete(habitId);
+  else set.add(habitId);
+  state = { ...state, selectedHabitIds: [...set] };
+  emit();
+}
+
+export function setSelectedHabits(ids) {
+  state = { ...state, selectedHabitIds: [...ids] };
+  emit();
+}
+
+export function isHabitSelected(habitId) {
+  return state.selectedHabitIds.includes(habitId);
+}
+
+export function markCompleted() {
+  state = { ...state, isCompleted: true };
+  emit();
+}
+
+export function setNotificationsEnabled(value) {
+  state = { ...state, notificationsEnabled: Boolean(value) };
+  emit();
+}
+
+export function setContractSigned(value) {
+  state = { ...state, contractSigned: Boolean(value) };
+  emit();
+}
+
+export function resetOnboarding() {
+  clearOnboarding();
+  state = {
+    ...DEFAULT_STATE,
+    selectedHabitIds: CORE_HABITS.map((h) => h.id),
+    answers: {}
+  };
+  emit();
+}
+
+export function hasUnfinishedOnboarding() {
+  return state.currentStep > 0 && !state.isCompleted;
 }

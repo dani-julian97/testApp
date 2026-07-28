@@ -1,4 +1,4 @@
-const CACHE_NAME = "ikigai-app-v4";
+const CACHE_NAME = "ikigai-app-v5";
 
 const PRECACHE = [
   "./",
@@ -9,20 +9,37 @@ const PRECACHE = [
   "./css/components.css",
   "./css/screens.css",
   "./js/main.js",
+  "./js/core/flowController.js",
   "./js/core/router.js",
   "./js/core/store.js",
+  "./js/core/storage.js",
   "./js/core/haptics.js",
   "./js/core/audio.js",
-  "./js/data/questions.js",
+  "./js/data/habits.js",
+  "./js/data/flow.js",
   "./js/ui/dom.js",
+  "./js/ui/icons.js",
   "./js/ui/Button.js",
   "./js/ui/ProgressBar.js",
-  "./js/ui/OptionCard.js",
-  "./js/ui/ScreenLayout.js",
+  "./js/ui/Slider.js",
+  "./js/ui/HabitGrid.js",
+  "./js/ui/HabitCard.js",
+  "./js/ui/LifeDots.js",
+  "./js/ui/RadarChart.js",
+  "./js/ui/HoldButton.js",
+  "./js/ui/Shell.js",
   "./js/screens/WelcomeScreen.js",
-  "./js/screens/AuthScreen.js",
-  "./js/screens/QuizScreen.js",
-  "./js/screens/ReadyScreen.js",
+  "./js/screens/AgeScreen.js",
+  "./js/screens/HabitDetailScreen.js",
+  "./js/screens/BaselineScreen.js",
+  "./js/screens/LifeScreen.js",
+  "./js/screens/CalculatingScreen.js",
+  "./js/screens/StatsScreen.js",
+  "./js/screens/AdjustHabitsScreen.js",
+  "./js/screens/ContractScreen.js",
+  "./js/screens/CelebrationScreen.js",
+  "./js/screens/NotificationsScreen.js",
+  "./js/screens/PlanReadyScreen.js",
   "./assets/images/icon-192.png",
   "./assets/images/welcome.png"
 ];
@@ -59,7 +76,6 @@ self.addEventListener("fetch", (event) => {
     request.mode === "navigate" ||
     (request.headers.get("accept") || "").includes("text/html");
 
-  // Don't precache-trap large audio; network-first with cache fallback
   const url = new URL(request.url);
   const isAudio = url.pathname.endsWith(".mp3");
 
@@ -74,7 +90,9 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() =>
-          caches.match(request).then((r) => r || (isDocument ? caches.match("./index.html") : undefined))
+          caches
+            .match(request)
+            .then((r) => r || (isDocument ? caches.match("./index.html") : undefined))
         )
     );
     return;

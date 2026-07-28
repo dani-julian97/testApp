@@ -11,28 +11,22 @@ body {
   height: 100%;
   min-height: 100dvh;
   min-height: -webkit-fill-available;
+  background: var(--bg);
 }
 
 html {
   -webkit-text-size-adjust: 100%;
   touch-action: manipulation;
-  background: #0c1612;
 }
 
 body {
   font-family: var(--font-body);
-  color: var(--ink);
-  background: #0c1612;
+  color: var(--text);
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  min-height: 100dvh;
-  min-height: -webkit-fill-available;
   overflow: hidden;
   touch-action: manipulation;
-}
-
-body.is-light {
-  background: var(--foam);
 }
 
 img {
@@ -68,6 +62,7 @@ a {
   min-height: 100dvh;
   min-height: -webkit-fill-available;
   overflow: hidden;
+  background: var(--bg);
 }
 
 .screen {
@@ -77,24 +72,33 @@ a {
   flex-direction: column;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(12px);
+  transform: translateX(18px);
   transition:
     opacity var(--duration-slow) var(--ease-out),
     transform var(--duration-slow) var(--ease-out);
   will-change: opacity, transform;
+  background: var(--bg);
 }
 
 .screen.is-active {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
+  transform: translateX(0);
   z-index: 2;
 }
 
 .screen.is-exit {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateX(-12px);
   z-index: 1;
+}
+
+.screen.is-back {
+  transform: translateX(-18px);
+}
+
+.screen.is-back.is-active {
+  transform: translateX(0);
 }
 
 .sr-only {

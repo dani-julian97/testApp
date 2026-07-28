@@ -4,22 +4,21 @@ import { haptic } from "../core/haptics.js";
 export function createButton({
   label,
   variant = "primary",
-  block = false,
+  block = true,
   disabled = false,
-  type = "button",
   onClick,
-  className = "",
-  haptic: hapticType = "light"
+  haptic: hapticType = "light",
+  className = ""
 } = {}) {
   const classes = ["btn", `btn--${variant}`];
   if (block) classes.push("btn--block");
   if (className) classes.push(className);
 
-  return el(
+  const node = el(
     "button",
     {
       className: classes.join(" "),
-      type,
+      type: "button",
       disabled,
       events: {
         click: (e) => {
@@ -31,22 +30,6 @@ export function createButton({
     },
     label
   );
-}
 
-export function createIconButton({ label, onClick, svg }) {
-  return el(
-    "button",
-    {
-      className: "icon-btn",
-      type: "button",
-      attrs: { "aria-label": label },
-      events: {
-        click: (e) => {
-          haptic("light");
-          onClick?.(e);
-        }
-      },
-      html: svg
-    }
-  );
+  return node;
 }
