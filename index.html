@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <title>Ikigai</title>
 
   <link rel="manifest" href="manifest.json">
@@ -23,8 +23,36 @@
   <link rel="stylesheet" href="./css/screens.css">
 
   <link rel="preload" as="image" href="./assets/images/welcome.png">
+  <link rel="preload" as="audio" href="./assets/audio/waves.mp3">
 </head>
 <body>
+  <audio
+    id="ambient-audio"
+    src="./assets/audio/waves.mp3"
+    loop
+    preload="auto"
+    autoplay
+    playsinline
+    aria-hidden="true"
+  ></audio>
+  <script>
+    (function () {
+      var audio = document.getElementById("ambient-audio");
+      if (!audio) return;
+      audio.volume = 0.22;
+      function play() {
+        audio.play().catch(function () {
+          audio.muted = true;
+          audio.play().then(function () {
+            audio.muted = false;
+            audio.volume = 0.22;
+          }).catch(function () {});
+        });
+      }
+      play();
+      document.addEventListener("DOMContentLoaded", play);
+    })();
+  </script>
   <div id="app" role="application" aria-label="Ikigai"></div>
   <script type="module" src="./js/main.js"></script>
 </body>

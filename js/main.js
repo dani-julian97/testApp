@@ -1,4 +1,5 @@
 import { initRouter, registerScreen, navigate } from "./core/router.js";
+import { initAmbientAudio } from "./core/audio.js";
 import { createWelcomeScreen } from "./screens/WelcomeScreen.js";
 import { createLoginScreen, createSignupScreen } from "./screens/AuthScreen.js";
 import { createQuizScreen } from "./screens/QuizScreen.js";
@@ -18,6 +19,8 @@ async function boot() {
   if (!root) return;
 
   try {
+    initAmbientAudio();
+
     initRouter(root);
 
     registerScreen("welcome", createWelcomeScreen());

@@ -1,7 +1,7 @@
 import { el } from "../ui/dom.js";
 import { createButton } from "../ui/Button.js";
 import { navigate } from "../core/router.js";
-import { startAmbientAudio, stopAmbientAudio } from "../core/audio.js";
+import { stopAmbientAudio } from "../core/audio.js";
 import { resetQuiz, setState } from "../core/store.js";
 
 function goToQuiz() {
@@ -86,7 +86,6 @@ export function createWelcomeScreen() {
       document
         .querySelector('meta[name="theme-color"]')
         ?.setAttribute("content", "#0c1612");
-      await startAmbientAudio();
     },
     onLeave: async () => {
       stopAmbientAudio();

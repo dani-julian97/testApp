@@ -101,6 +101,8 @@
   padding: 0.55rem 0.7rem;
   border-radius: var(--radius-sm);
   transition: color 180ms var(--ease-soft), background 180ms var(--ease-soft);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .welcome__link:hover {

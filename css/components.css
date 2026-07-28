@@ -18,6 +18,7 @@
     color 180ms var(--ease-soft);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .btn:active:not(:disabled) {
@@ -158,6 +159,7 @@
     box-shadow 180ms var(--ease-soft),
     color 180ms var(--ease-soft);
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .option:hover {
