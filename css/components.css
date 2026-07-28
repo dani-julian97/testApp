@@ -272,6 +272,7 @@
 }
 
 .shell--light {
+  min-height: 100%;
   background:
     radial-gradient(ellipse 80% 50% at 50% -10%, rgba(127, 168, 146, 0.18), transparent 55%),
     linear-gradient(180deg, #f7faf8 0%, var(--foam) 48%, #eef2ef 100%);

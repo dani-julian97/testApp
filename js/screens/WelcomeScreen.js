@@ -83,6 +83,7 @@ export function createWelcomeScreen() {
     mount: () => root,
     onEnter: async () => {
       restartZoom();
+      document.body.classList.remove("is-light");
       document
         .querySelector('meta[name="theme-color"]')
         ?.setAttribute("content", "#0c1612");

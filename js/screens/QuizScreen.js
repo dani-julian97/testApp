@@ -227,6 +227,7 @@ export function createQuizScreen() {
   return {
     mount,
     onEnter: async () => {
+      document.body.classList.add("is-light");
       document
         .querySelector('meta[name="theme-color"]')
         ?.setAttribute("content", "#eef2ef");

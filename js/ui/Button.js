@@ -23,7 +23,7 @@ export function createButton({
       disabled,
       events: {
         click: (e) => {
-          if (disabled) return;
+          if (e.currentTarget.disabled) return;
           if (hapticType) haptic(hapticType);
           onClick?.(e);
         }

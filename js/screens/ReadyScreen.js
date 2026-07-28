@@ -31,6 +31,7 @@ export function createReadyScreen() {
   return {
     mount: () => root,
     onEnter: async () => {
+      document.body.classList.add("is-light");
       document
         .querySelector('meta[name="theme-color"]')
         ?.setAttribute("content", "#eef2ef");
