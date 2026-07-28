@@ -14,7 +14,7 @@ import { getHabit, formatHabitProgress } from "../data/habits.js";
 import { TROPHIES, getRank, trophiesForHabit } from "../data/trophies.js";
 import { createButton } from "../ui/Button.js";
 import { haptic } from "../core/haptics.js";
-import { createAddHabitView } from "./AddHabitScreen.js";
+import { createAddHabitView } from "../screens/AddHabitScreen.js";
 
 const TABS = [
   { id: "home", label: "Home", icon: "home" },

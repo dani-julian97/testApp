@@ -1,4 +1,4 @@
-const CACHE_NAME = "ikigai-app-v6";
+const CACHE_NAME = "ikigai-app-v7";
 
 const PRECACHE = [
   "./",

@@ -24,11 +24,23 @@ import { startAmbientAudio, stopAmbientAudio } from "./audio.js";
 import { startMainApp } from "../app/MainApp.js";
 
 export function startApp(root) {
-  if (hasActivePlan()) {
-    startMainApp(root);
-    return { mode: "main" };
+  try {
+    if (hasActivePlan()) {
+      startMainApp(root);
+      return { mode: "main" };
+    }
+    return startOnboarding(root);
+  } catch (error) {
+    console.error("Failed to start app:", error);
+    root.innerHTML =
+      '<div style="padding:2rem;font-family:system-ui,sans-serif;color:#fff;background:#000;min-height:100dvh;">' +
+      "<h1 style=\"margin-bottom:0.75rem;\">Something went wrong</h1>" +
+      "<p style=\"color:#9a9a9a;line-height:1.5;margin-bottom:1rem;\">Please refresh. If it keeps happening, clear site data.</p>" +
+      "<pre style=\"color:#f87171;white-space:pre-wrap;font-size:12px;\">" +
+      String(error && error.message ? error.message : error) +
+      "</pre></div>";
+    return { mode: "error" };
   }
-  return startOnboarding(root);
 }
 
 export function startOnboarding(root) {
@@ -75,7 +87,17 @@ export function startOnboarding(root) {
 
   function enterMainApp() {
     stopAmbientAudio();
-    startMainApp(root);
+    try {
+      startMainApp(root);
+    } catch (error) {
+      console.error("Failed to open main app:", error);
+      root.innerHTML =
+        '<div style="padding:2rem;font-family:system-ui,sans-serif;color:#fff;background:#000;min-height:100dvh;">' +
+        "<h1 style=\"margin-bottom:0.75rem;\">Could not open the app</h1>" +
+        "<p style=\"color:#9a9a9a;\">" +
+        String(error && error.message ? error.message : error) +
+        "</p></div>";
+    }
   }
 
   function goToPlanLength() {
