@@ -1,5 +1,5 @@
-import { el } from "./dom.js";
-import { createButton } from "./Button.js";
+import { el } from "../ui/dom.js";
+import { createButton } from "../ui/Button.js";
 import { navigate } from "../core/router.js";
 import { startAmbientAudio, stopAmbientAudio } from "../core/audio.js";
 import { resetQuiz, setState } from "../core/store.js";
