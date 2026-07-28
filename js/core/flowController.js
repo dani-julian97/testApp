@@ -3,8 +3,8 @@ import { FLOW, getStep, getProgressPercent } from "../data/flow.js";
 import {
   getState,
   setStep,
-  markCompleted,
-  hasUnfinishedOnboarding
+  hasUnfinishedOnboarding,
+  hasActivePlan
 } from "./store.js";
 import { haptic } from "./haptics.js";
 import { createWelcomeView } from "../screens/WelcomeScreen.js";
@@ -19,9 +19,20 @@ import { createContractView } from "../screens/ContractScreen.js";
 import { createCelebrationView } from "../screens/CelebrationScreen.js";
 import { createNotificationsView } from "../screens/NotificationsScreen.js";
 import { createPlanReadyView } from "../screens/PlanReadyScreen.js";
-import { stopAmbientAudio, startAmbientAudio } from "./audio.js";
+import { createPlanLengthView } from "../screens/PlanLengthScreen.js";
+import { startAmbientAudio, stopAmbientAudio } from "./audio.js";
+import { startMainApp } from "../app/MainApp.js";
+
+export function startApp(root) {
+  if (hasActivePlan()) {
+    startMainApp(root);
+    return { mode: "main" };
+  }
+  return startOnboarding(root);
+}
 
 export function startOnboarding(root) {
+  clear(root);
   const host = el("div", {
     style: "position:relative;width:100%;height:100%;"
   });
@@ -29,6 +40,7 @@ export function startOnboarding(root) {
 
   let currentView = null;
   let animLock = false;
+  let choosingPlan = false;
 
   function mountView(factory, { back = false } = {}) {
     if (animLock) return;
@@ -37,7 +49,9 @@ export function startOnboarding(root) {
     const nextEl = factory({
       goNext,
       goBack,
-      refresh: () => render({ replace: true })
+      refresh: () => render({ replace: true }),
+      goToPlanLength,
+      enterMainApp
     });
 
     nextEl.classList.add("screen");
@@ -57,6 +71,21 @@ export function startOnboarding(root) {
     window.setTimeout(() => {
       animLock = false;
     }, 320);
+  }
+
+  function enterMainApp() {
+    stopAmbientAudio();
+    startMainApp(root);
+  }
+
+  function goToPlanLength() {
+    choosingPlan = true;
+    stopAmbientAudio();
+    mountView((api) =>
+      createPlanLengthView({
+        onPlanStarted: () => enterMainApp()
+      })
+    );
   }
 
   function renderFactory(step) {
@@ -89,18 +118,22 @@ export function startOnboarding(root) {
       case "notifications":
         return createNotificationsView;
       case "plan":
-        return createPlanReadyView;
+        return (api) =>
+          createPlanReadyView({
+            ...api,
+            onStartPlan: goToPlanLength
+          });
       default:
         return createWelcomeView;
     }
   }
 
   function render({ replace = false, back = false } = {}) {
+    choosingPlan = false;
     const { currentStep } = getState();
     const step = getStep(currentStep);
     if (!step) return;
 
-    // Audio only on welcome
     if (step.type === "welcome") startAmbientAudio();
     else stopAmbientAudio();
 
@@ -115,8 +148,7 @@ export function startOnboarding(root) {
   function goNext() {
     const { currentStep } = getState();
     if (currentStep >= FLOW.length - 1) {
-      markCompleted();
-      haptic("success");
+      goToPlanLength();
       return;
     }
     haptic("medium");
@@ -125,6 +157,11 @@ export function startOnboarding(root) {
   }
 
   function goBack() {
+    if (choosingPlan) {
+      choosingPlan = false;
+      render({ back: true });
+      return;
+    }
     const { currentStep } = getState();
     if (currentStep <= 0) return;
     haptic("light");
@@ -132,23 +169,27 @@ export function startOnboarding(root) {
     render({ back: true });
   }
 
-  // Hardware / browser back
   window.history.pushState({ ikigai: true }, "");
   window.addEventListener("popstate", () => {
+    if (hasActivePlan()) return;
     const { currentStep } = getState();
-    if (currentStep > 0) {
+    if (currentStep > 0 || choosingPlan) {
       window.history.pushState({ ikigai: true }, "");
       goBack();
     }
   });
 
-  // Resume unfinished onboarding (skip welcome if mid-flow)
   if (hasUnfinishedOnboarding()) {
     render({ replace: true });
-  } else {
+  } else if (!getState().isCompleted) {
     setStep(0);
     render({ replace: true });
+  } else if (!hasActivePlan()) {
+    // Finished onboarding but never picked plan length
+    goToPlanLength();
+  } else {
+    enterMainApp();
   }
 
-  return { goNext, goBack, render };
+  return { goNext, goBack, render, mode: "onboarding" };
 }

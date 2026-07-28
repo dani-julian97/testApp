@@ -25,7 +25,7 @@ function growthChart() {
   `;
 }
 
-export function createPlanReadyView() {
+export function createPlanReadyView({ onStartPlan } = {}) {
   const habitCount = getState().selectedHabitIds.length || 6;
 
   const body = el("div", { className: "plan fade-in" }, [
@@ -41,14 +41,8 @@ export function createPlanReadyView() {
     ]),
     el("div", { className: "plan__chart", html: growthChart() }),
     el("div", { className: "plan__legend" }, [
-      el("span", {}, [
-        el("i", { style: "color:#fff" }),
-        " With Ikigai"
-      ]),
-      el("span", {}, [
-        el("i", { style: "color:#777" }),
-        " Without"
-      ])
+      el("span", {}, [el("i", { style: "color:#fff" }), " With Ikigai"]),
+      el("span", {}, [el("i", { style: "color:#777" }), " Without"])
     ]),
     el("div", { className: "plan__metrics" }, [
       el("div", { className: "plan__metric" }, [
@@ -78,6 +72,7 @@ export function createPlanReadyView() {
       onClick: () => {
         markCompleted();
         haptic("success");
+        onStartPlan?.();
       }
     })
   });

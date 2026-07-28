@@ -1,4 +1,4 @@
-const CACHE_NAME = "ikigai-app-v5";
+const CACHE_NAME = "ikigai-app-v6";
 
 const PRECACHE = [
   "./",
@@ -17,6 +17,8 @@ const PRECACHE = [
   "./js/core/audio.js",
   "./js/data/habits.js",
   "./js/data/flow.js",
+  "./js/data/trophies.js",
+  "./js/app/MainApp.js",
   "./js/ui/dom.js",
   "./js/ui/icons.js",
   "./js/ui/Button.js",
@@ -36,10 +38,12 @@ const PRECACHE = [
   "./js/screens/CalculatingScreen.js",
   "./js/screens/StatsScreen.js",
   "./js/screens/AdjustHabitsScreen.js",
+  "./js/screens/AddHabitScreen.js",
   "./js/screens/ContractScreen.js",
   "./js/screens/CelebrationScreen.js",
   "./js/screens/NotificationsScreen.js",
   "./js/screens/PlanReadyScreen.js",
+  "./js/screens/PlanLengthScreen.js",
   "./assets/images/icon-192.png",
   "./assets/images/welcome.png"
 ];

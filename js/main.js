@@ -1,4 +1,4 @@
-import { startOnboarding } from "./core/flowController.js";
+import { startApp } from "./core/flowController.js";
 import { initAmbientAudio } from "./core/audio.js";
 
 function registerServiceWorker() {
@@ -6,13 +6,29 @@ function registerServiceWorker() {
   navigator.serviceWorker.register("./service-worker.js").catch(() => {});
 }
 
+function lockSelection() {
+  document.addEventListener("copy", (e) => e.preventDefault());
+  document.addEventListener("cut", (e) => e.preventDefault());
+  document.addEventListener("selectstart", (e) => {
+    const tag = e.target?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    e.preventDefault();
+  });
+  document.addEventListener("contextmenu", (e) => {
+    const tag = e.target?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    e.preventDefault();
+  });
+}
+
 function boot() {
   const root = document.getElementById("app");
   if (!root) return;
 
   try {
+    lockSelection();
     initAmbientAudio();
-    startOnboarding(root);
+    startApp(root);
     registerServiceWorker();
   } catch (error) {
     console.error("Ikigai failed to start:", error);

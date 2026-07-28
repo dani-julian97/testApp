@@ -1,12 +1,12 @@
-import { loadOnboarding, saveOnboarding, clearOnboarding, DEFAULT_STATE } from "./storage.js";
-import { CORE_HABITS } from "../data/habits.js";
+import { loadState, saveState, clearState, DEFAULT_STATE, todayKey } from "./storage.js";
+import { CORE_HABITS, getHabit, setCustomHabitsCache } from "../data/habits.js";
+import { evaluateTrophies } from "../data/trophies.js";
 
 const listeners = new Set();
-
-let state = loadOnboarding();
+let state = loadState();
 
 function emit() {
-  saveOnboarding(state);
+  saveState(state);
   listeners.forEach((fn) => fn(state));
 }
 
@@ -25,10 +25,7 @@ export function setStep(index) {
 }
 
 export function setAnswer(questionId, value) {
-  state = {
-    ...state,
-    answers: { ...state.answers, [questionId]: value }
-  };
+  state = { ...state, answers: { ...state.answers, [questionId]: value } };
   emit();
 }
 
@@ -72,16 +69,106 @@ export function setContractSigned(value) {
   emit();
 }
 
-export function resetOnboarding() {
-  clearOnboarding();
+export function startPlan(days) {
   state = {
-    ...DEFAULT_STATE,
-    selectedHabitIds: CORE_HABITS.map((h) => h.id),
-    answers: {}
+    ...state,
+    isCompleted: true,
+    planDays: days,
+    planStartDate: todayKey(),
+    selectedDate: todayKey(),
+    mainTab: "home"
   };
+  emit();
+}
+
+export function hasActivePlan() {
+  return Boolean(state.isCompleted && state.planDays);
+}
+
+export function setMainTab(tab) {
+  state = { ...state, mainTab: tab };
+  emit();
+}
+
+export function setSelectedDate(dateKey) {
+  state = { ...state, selectedDate: dateKey };
+  emit();
+}
+
+export function isHabitDone(habitId, dateKey = state.selectedDate) {
+  return Boolean(state.completions[dateKey]?.[habitId]);
+}
+
+export function toggleHabitCompletion(habitId, dateKey = state.selectedDate) {
+  const day = { ...(state.completions[dateKey] || {}) };
+  const habit = getHabit(habitId);
+  const xpGain = habit?.xpLevel === "Major" ? 50 : 30;
+
+  if (day[habitId]) {
+    delete day[habitId];
+    state = {
+      ...state,
+      completions: { ...state.completions, [dateKey]: day },
+      xp: Math.max(0, state.xp - xpGain)
+    };
+  } else {
+    day[habitId] = true;
+    state = {
+      ...state,
+      completions: { ...state.completions, [dateKey]: day },
+      xp: state.xp + xpGain
+    };
+  }
+
+  const unlocked = evaluateTrophies(state);
+  state = { ...state, unlockedTrophies: unlocked };
+  emit();
+}
+
+export function dayCompletionRatio(dateKey) {
+  const ids = state.selectedHabitIds;
+  if (!ids.length) return 0;
+  const done = ids.filter((id) => state.completions[dateKey]?.[id]).length;
+  return done / ids.length;
+}
+
+export function addJournalEntry(text) {
+  const entry = {
+    id: `j_${Date.now()}`,
+    date: state.selectedDate || todayKey(),
+    text: text.trim(),
+    createdAt: new Date().toISOString()
+  };
+  state = { ...state, journalEntries: [entry, ...state.journalEntries] };
+  emit();
+  return entry;
+}
+
+export function addCustomHabit(habit) {
+  const customHabits = [...state.customHabits, habit];
+  setCustomHabitsCache(customHabits);
+  const selectedHabitIds = state.selectedHabitIds.includes(habit.id)
+    ? state.selectedHabitIds
+    : [...state.selectedHabitIds, habit.id];
+  state = { ...state, customHabits, selectedHabitIds };
+  emit();
+}
+
+export function resetOnboarding() {
+  clearState();
+  state = structuredClone(DEFAULT_STATE);
+  setCustomHabitsCache([]);
   emit();
 }
 
 export function hasUnfinishedOnboarding() {
   return state.currentStep > 0 && !state.isCompleted;
+}
+
+export function getPlanDayNumber() {
+  if (!state.planStartDate) return 1;
+  const start = new Date(state.planStartDate + "T12:00:00");
+  const now = new Date(state.selectedDate + "T12:00:00");
+  const diff = Math.floor((now - start) / 86400000) + 1;
+  return Math.max(1, Math.min(state.planDays || 90, diff));
 }

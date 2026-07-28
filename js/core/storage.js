@@ -1,63 +1,81 @@
-const STORAGE_KEY = "ikigai_onboarding_v1";
+import { CORE_HABITS, setCustomHabitsCache } from "../data/habits.js";
 
-const DEFAULT_STATE = {
+const STORAGE_KEY = "ikigai_app_v2";
+
+function todayKey() {
+  const d = new Date();
+  return d.toISOString().slice(0, 10);
+}
+
+export const DEFAULT_STATE = {
   currentStep: 0,
   answers: {},
-  selectedHabitIds: [
-    "reading",
-    "doomscroll",
-    "diet",
-    "exercise",
-    "deepwork",
-    "journal"
-  ],
+  selectedHabitIds: CORE_HABITS.map((h) => h.id),
   isCompleted: false,
   notificationsEnabled: false,
-  contractSigned: false
+  contractSigned: false,
+  planDays: null,
+  planStartDate: null,
+  customHabits: [],
+  completions: {},
+  journalEntries: [],
+  selectedDate: todayKey(),
+  mainTab: "home",
+  xp: 0,
+  unlockedTrophies: []
 };
 
-export function loadOnboarding() {
+export function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_STATE, selectedHabitIds: [...DEFAULT_STATE.selectedHabitIds] };
-    const parsed = JSON.parse(raw);
-    return {
-      ...DEFAULT_STATE,
+    // migrate old key if present
+    const legacy = localStorage.getItem("ikigai_onboarding_v1");
+    const source = raw || legacy;
+    if (!source) {
+      setCustomHabitsCache([]);
+      return structuredClone(DEFAULT_STATE);
+    }
+    const parsed = JSON.parse(source);
+    const state = {
+      ...structuredClone(DEFAULT_STATE),
       ...parsed,
       answers: parsed.answers || {},
       selectedHabitIds: Array.isArray(parsed.selectedHabitIds)
         ? parsed.selectedHabitIds
-        : [...DEFAULT_STATE.selectedHabitIds]
+        : [...DEFAULT_STATE.selectedHabitIds],
+      customHabits: Array.isArray(parsed.customHabits) ? parsed.customHabits : [],
+      completions: parsed.completions || {},
+      journalEntries: Array.isArray(parsed.journalEntries) ? parsed.journalEntries : [],
+      unlockedTrophies: Array.isArray(parsed.unlockedTrophies)
+        ? parsed.unlockedTrophies
+        : []
     };
+    if (!state.selectedDate) state.selectedDate = todayKey();
+    setCustomHabitsCache(state.customHabits);
+    return state;
   } catch {
-    return { ...DEFAULT_STATE, selectedHabitIds: [...DEFAULT_STATE.selectedHabitIds] };
+    setCustomHabitsCache([]);
+    return structuredClone(DEFAULT_STATE);
   }
 }
 
-export function saveOnboarding(state) {
+export function saveState(state) {
   try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        currentStep: state.currentStep,
-        answers: state.answers,
-        selectedHabitIds: state.selectedHabitIds,
-        isCompleted: state.isCompleted,
-        notificationsEnabled: state.notificationsEnabled,
-        contractSigned: state.contractSigned
-      })
-    );
-  } catch {
-    /* ignore quota / private mode */
-  }
-}
-
-export function clearOnboarding() {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    setCustomHabitsCache(state.customHabits || []);
   } catch {
     /* ignore */
   }
 }
 
-export { DEFAULT_STATE };
+export function clearState() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("ikigai_onboarding_v1");
+  } catch {
+    /* ignore */
+  }
+  setCustomHabitsCache([]);
+}
+
+export { todayKey };

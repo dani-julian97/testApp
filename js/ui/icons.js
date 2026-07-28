@@ -1,4 +1,4 @@
-/** Inline SVG icons matching the Habitten prototype style (filled / outlined). */
+/** Inline SVG icons — Habitten / Ikigai style */
 
 const ICONS = {
   book: `<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H11v18H6.5A2.5 2.5 0 0 0 4 22.5V4.5zm16 0A2.5 2.5 0 0 0 17.5 2H13v18h4.5a2.5 2.5 0 0 1 2.5 2.5V4.5z"/>`,
@@ -14,15 +14,52 @@ const ICONS = {
   squat: `<path d="M9 4a2 2 0 1 1 4 0 2 2 0 0 1-4 0zm-1 5h6l1 4 2 2-1.5 1.5-2-2-1 4h-2l-1-4-2 2L6 15l2-2 1-4z"/>`,
   drop: `<path d="M12 2s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/>`,
   bed: `<path d="M3 12V7a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v4h6a2 2 0 0 1 2 2v5h-2v-2H5v2H3v-5a2 2 0 0 1 2-2H3zm2 0h8V8a1 1 0 0 0-1-1H5v5z"/>`,
-  check: `<path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  dumbbell: `<path d="M6 10V8h2v8H6v-2H4v-4h2zm12 0h2v4h-2v2h-2V8h2v2zM9 9h6v6H9V9z"/>`,
+  briefcase: `<path d="M9 6V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4zm2 0h2V5h-2v1z"/>`,
+  language: `<path d="M4 5h9v2H9.4A12 12 0 0 1 12 12.5c.8 1.4 1.8 2.6 3 3.5l-1.2 1.6A16 16 0 0 1 10 13.2 14 14 0 0 1 7 7H4V5zm11.5 0H20v2h-2.1l1.6 8H22v2h-8v-2h1.4L14 7h-.5V5z"/>`,
+  hammer: `<path d="M15.5 3.5 19 7l-3 3 1.5 1.5-2 2L14 12l-8.5 8.5-2-2L12 10l-1.5-1.5 2-2L14 8l1.5-4.5z"/>`,
+  sunrise: `<path d="M12 4v3M6.5 7.5l2 2M17.5 7.5l-2 2M4 14h16M6 18h12M8 12a4 4 0 0 1 8 0"/>`,
+  meditate: `<path d="M12 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm-5 5c0-2 2.2-3.5 5-3.5s5 1.5 5 3.5v1H7v-1zm-1 3h12v2l-2 4H8l-2-4v-2z"/>`,
+  grad: `<path d="M12 4 2 9l10 5 8-4v6h2V9L12 4zm-5 9.2V16c0 1.7 2.2 3 5 3s5-1.3 5-3v-2.8l-5 2.5-5-2.5z"/>`,
+  breath: `<path d="M4 14c2-4 4-6 8-6s6 2 8 6M7 17c1.5-2.5 3-3.5 5-3.5s3.5 1 5 3.5M10 20c.7-1 1.3-1.5 2-1.5s1.3.5 2 1.5"/>`,
+  wine: `<path d="M8 3h8l-1 8a4 4 0 0 1-3 3.8V19h3v2H9v-2h3v-4.2A4 4 0 0 1 9 11L8 3zm1.2 2 .7 5.2A2 2 0 0 0 12 12a2 2 0 0 0 2.1-1.8L14.8 5H9.2z"/>`,
+  sparkle: `<path d="M12 2l1.2 6.3L19 10l-5.8 1.7L12 18l-1.2-6.3L5 10l5.8-1.7L12 2zm6 10 1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3zM5 15l.7 2 2 .7-2 .7L5 20.5l-.7-2-2-.7 2-.7.7-2z"/>`,
+  burger: `<path d="M4 9h16a1 1 0 0 0 0-2H4a1 1 0 0 0 0 2zm0 3h16v2c0 2-2 4-4 4H8c-2 0-4-2-4-4v-2zm1.5-1.5L7 9h10l1.5 1.5H5.5z"/>`,
+  shower: `<path d="M8 3h8v2H8V3zm1 4h6l1 3H8l1-3zm-2 5h10v1c0 3-2 6-5 7.5V22H11v-1.5C8 19 6 16 6 13v-1z"/>`,
+  smoke: `<path d="M4 16h12v2H4v-2zm14 0h2v2h-2v-2zM7 10c0-2 1.5-3 3-3 2 0 2 1.5 3.5 1.5S16 7 16 5h2c0 3-1.5 4.5-3.5 4.5S13 8 11 8s-2 1-2 2H7z"/>`,
+  nofap: `<path d="M12 2a5 5 0 0 1 5 5v3h1a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h1V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v3h6V7a3 3 0 0 0-3-3z"/>`,
+  friends: `<path d="M8 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm8 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2.5 19c0-2.5 2.5-4.5 5.5-4.5s5.5 2 5.5 4.5V20H2.5v-1zm9 0c.4-2.8 2.8-5 6-5s5.6 2.2 6 5v1h-12v-1z"/>`,
+  walk: `<path d="M13 5.5a2 2 0 1 0-2 0l-1.5 4H7l2 3-2 7h2.2l1.6-5.5L13 14l1 6h2.2l-1.5-8 2.3-2.5L15 7h-2l0-1.5z"/>`,
+  yoga: `<path d="M12 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm-1 2h2l1 4 3 2-1 1.5-3-1.5V20h-2v-6L8 15.5 7 14l3-2 1-4z"/>`,
+  music: `<path d="M10 4v11.5A3.5 3.5 0 1 1 8 12.5V8h8V4h-6z"/>`,
+  cook: `<path d="M6 10h12l-1 10H7L6 10zm3-6h6v2H9V4zM8 8h8v2H8V8z"/>`,
   heart: `<path d="M12 21s-7.2-4.6-9.5-8.3C.4 9.5 2.1 5.5 5.8 5.2c2-.2 3.7 1 4.7 2.4 1-1.4 2.7-2.6 4.7-2.4 3.7.3 5.4 4.3 3.3 7.5C19.2 16.4 12 21 12 21z"/>`,
+  check: `<path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>`,
   bell: `<path d="M12 3a6 6 0 0 0-6 6v3.3l-1.4 2.8A1 1 0 0 0 5.5 17h13a1 1 0 0 0 .9-1.9L18 12.3V9a6 6 0 0 0-6-6zm0 18a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 21z"/>`,
   lock: `<path d="M8 10V8a4 4 0 1 1 8 0v2h1a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h1zm2 0h4V8a2 2 0 1 0-4 0v2z"/>`,
-  hand: `<path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11h1V4.5a1.5 1.5 0 0 1 3 0V11h1V6.5a1.5 1.5 0 0 1 3 0V14c0 4-2.5 7-7 7h-1c-3.5 0-6-2.5-6-6v-5a1.5 1.5 0 0 1 3 0V11h1z"/>`
+  hand: `<path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11h1V4.5a1.5 1.5 0 0 1 3 0V11h1V6.5a1.5 1.5 0 0 1 3 0V14c0 4-2.5 7-7 7h-1c-3.5 0-6-2.5-6-6v-5a1.5 1.5 0 0 1 3 0V11h1z"/>`,
+  home: `<path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-8.5z"/>`,
+  progress: `<path d="M4 18V8h3v10H4zm6 0V4h3v14h-3zm6 0v-6h3v6h-3z"/>`,
+  block: `<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm4.3 13.7L7.3 7.7l1.4-1.4 9 9-1.4 1.4z"/>`,
+  trophy: `<path d="M7 4h10v2h2a2 2 0 0 1 2 2c0 3-2.2 5.2-5.2 5.8A4 4 0 0 1 13 16.9V18h3v2H8v-2h3v-1.1a4 4 0 0 1-2.8-3.1C5.2 13.2 3 11 3 8a2 2 0 0 1 2-2h2V4zm0 2H5a.5.5 0 0 0 0 1c0 2 1.2 3.5 3 4.2V6H7zm10 0h-3v5.2c1.8-.7 3-2.2 3-4.2a.5.5 0 0 0 0-1h-0z"/>`,
+  crown: `<path d="M3 8l3 3 3-5 3 5 3-3 2 10H3L5 8z"/>`,
+  plus: `<path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/>`,
+  chevron: `<path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`,
+  // Trophy art icons
+  laptop: `<path d="M4 6h16v9H4V6zm-1 10h18v2H3v-2z"/>`,
+  books: `<path d="M4 4h5v16H4V4zm7 0h5v16h-5V4zm7 2h3v14h-3V6z"/>`,
+  hourglass: `<path d="M7 3h10v2l-4 5 4 5v2H7v-2l4-5-4-5V3zm2.5 2 2.5 3.2L14.5 5h-5z"/>`,
+  typewriter: `<path d="M5 9h14v3h-1v6H6v-6H5V9zm3 5h8v2H8v-2zM8 4h8v4H8V4z"/>`,
+  owl: `<path d="M12 4c4 0 7 3 7 8 0 5-3 8-7 8s-7-3-7-8c0-5 3-8 7-8zm-3 7a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm6 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM9 15c1 .8 2 1.2 3 1.2S14 15.8 15 15"/>`,
+  phone: `<path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm0 2v12h8V5H8z"/>`
 };
 
 export function iconSvg(name, { size = 24, className = "" } = {}) {
   const body = ICONS[name] || ICONS.book;
   const cls = className ? ` class="${className}"` : "";
   return `<svg${cls} viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true">${body}</svg>`;
+}
+
+export function listIconNames() {
+  return Object.keys(ICONS);
 }

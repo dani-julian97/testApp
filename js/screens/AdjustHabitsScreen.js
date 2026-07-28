@@ -2,8 +2,14 @@ import { el, clear } from "../ui/dom.js";
 import { createButton } from "../ui/Button.js";
 import { createShell } from "../ui/Shell.js";
 import { createHabitCard } from "../ui/HabitCard.js";
-import { ALL_HABITS, HABIT_CATEGORIES, CORE_HABITS } from "../data/habits.js";
+import {
+  getAllHabits,
+  HABIT_CATEGORIES,
+  CORE_HABITS
+} from "../data/habits.js";
 import { getState, toggleHabit, isHabitSelected } from "../core/store.js";
+import { createAddHabitView } from "./AddHabitScreen.js";
+import { haptic } from "../core/haptics.js";
 
 function displayCategory(habit) {
   if (habit.category === "routine") return "Routine";
@@ -12,17 +18,18 @@ function displayCategory(habit) {
 
 function matchesFilter(habit, filter) {
   if (filter === "all") return true;
-  if (filter === "focus") return habit.category === "focus";
   return habit.category === filter;
 }
 
-export function createAdjustHabitsView({ goNext }) {
+export function createAdjustHabitsView({ goNext, refresh }) {
   let filter = "all";
   const listHost = el("div", { className: "habit-list" });
+  let rootShell = null;
 
   function orderedHabits() {
-    const extras = ALL_HABITS.filter((h) => !CORE_HABITS.some((c) => c.id === h.id));
-    const pool = filter === "all" ? [...CORE_HABITS, ...extras] : ALL_HABITS;
+    const all = getAllHabits();
+    const extras = all.filter((h) => !CORE_HABITS.some((c) => c.id === h.id));
+    const pool = filter === "all" ? [...CORE_HABITS, ...extras] : all;
     return pool.filter((h) => matchesFilter(h, filter));
   }
 
@@ -69,6 +76,24 @@ export function createAdjustHabitsView({ goNext }) {
     continueBtn.disabled = getState().selectedHabitIds.length === 0;
   }
 
+  function openCreate() {
+    haptic("light");
+    const overlay = el("div", {
+      className: "screen is-active",
+      style: "z-index:50;background:#000;"
+    });
+    const view = createAddHabitView({
+      onDone: () => {
+        overlay.remove();
+        renderList();
+        updateContinue();
+      },
+      onCancel: () => overlay.remove()
+    });
+    overlay.append(view);
+    document.getElementById("app")?.append(overlay);
+  }
+
   renderList();
   updateContinue();
 
@@ -80,11 +105,21 @@ export function createAdjustHabitsView({ goNext }) {
     }),
     el("div", { className: "filter-row" }, chips),
     el("p", { className: "hint-label", text: "Habits can be adjusted later" }),
-    listHost
+    listHost,
+    el("button", {
+      className: "btn btn--secondary btn--block",
+      type: "button",
+      text: "+ Create custom habit",
+      style:
+        "margin-top:0.75rem;background:#1a1a1a;color:#fff;border:1px solid rgba(255,255,255,0.12);",
+      events: { click: openCreate }
+    })
   ]);
 
-  return createShell({
+  rootShell = createShell({
     body,
     footer: continueBtn
   });
+
+  return rootShell;
 }
