@@ -1,14 +1,14 @@
 {
-  "name": "Pulse — Contador",
-  "short_name": "Pulse",
-  "description": "Un contador elegante que guarda tu progreso",
+  "name": "Ikigai",
+  "short_name": "Ikigai",
+  "description": "A calm path to your personalized life plan.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#061416",
-  "theme_color": "#0d7377",
+  "background_color": "#0c1612",
+  "theme_color": "#3f6b55",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "./assets/images/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     }

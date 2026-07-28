@@ -1,0 +1,55 @@
+:root {
+  /* Nature-inspired palette */
+  --ink: #15241f;
+  --ink-soft: #3d5249;
+  --ink-muted: #6b7f75;
+  --foam: #f3f6f4;
+  --mist: #e6ece8;
+  --white: #fbfcfb;
+  --sage: #5f8a72;
+  --sage-deep: #3f6b55;
+  --moss: #2a4a3c;
+  --leaf: #7fa892;
+  --sand: #d8cfc0;
+  --gold: #b89a6a;
+
+  --overlay: rgba(12, 22, 18, 0.52);
+  --overlay-strong: rgba(8, 16, 13, 0.68);
+
+  --line: rgba(21, 36, 31, 0.1);
+  --line-strong: rgba(21, 36, 31, 0.16);
+  --shadow-sm: 0 6px 18px rgba(21, 36, 31, 0.06);
+  --shadow-md: 0 14px 36px rgba(21, 36, 31, 0.1);
+
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 2rem;
+  --space-8: 2.5rem;
+  --space-9: 3.5rem;
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Figtree", system-ui, sans-serif;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration: 320ms;
+  --duration-slow: 520ms;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  --header-h: 56px;
+  --max-w: 440px;
+}
