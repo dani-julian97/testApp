@@ -26,7 +26,8 @@ export const ICON_CHOICES = [
   "book", "phone-off", "utensils", "run", "brain", "journal", "bike", "leaf",
   "pushup", "situp", "squat", "drop", "bed", "dumbbell", "briefcase", "language",
   "hammer", "sunrise", "meditate", "grad", "breath", "wine", "sparkle", "burger",
-  "shower", "smoke", "nofap", "friends", "walk", "yoga", "music", "cook", "heart"
+  "shower", "smoke", "nofap", "friends", "walk", "yoga", "music", "cook", "heart",
+  "calm-speak", "peace", "kind", "film", "book-focus", "list-heart", "pray"
 ];
 
 /** Core onboarding habits (quiz order) */
@@ -272,7 +273,17 @@ export const EXTRA_HABITS = [
   { id: "nojunk", title: "No junk food", color: "#f59e0b", category: "routine", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "burger", target: 1, targetUnit: "day", imageTone: "warm" },
   { id: "coldshower", title: "Cold shower", color: "#f59e0b", category: "routine", schedule: "Weekdays", xp: "3XP", xpLevel: "Minor", icon: "shower", target: 1, targetUnit: "day", imageTone: "focus" },
   { id: "nosmoking", title: "No smoking", color: "#f59e0b", category: "routine", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "smoke", target: 1, targetUnit: "day", imageTone: "energy" },
-  { id: "cook", title: "Cook a meal", color: "#f59e0b", category: "routine", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "cook", target: 1, targetUnit: "meal", imageTone: "warm" }
+  { id: "cook", title: "Cook a meal", color: "#f59e0b", category: "routine", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "cook", target: 1, targetUnit: "meal", imageTone: "warm" },
+
+  // Character / presence
+  { id: "noscold", title: "Don't scold", color: "#a855f7", category: "mental", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "calm-speak", target: 1, targetUnit: "day", imageTone: "calm" },
+  { id: "noargue", title: "Don't argue", color: "#a855f7", category: "mental", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "peace", target: 1, targetUnit: "day", imageTone: "calm" },
+  { id: "noinsult", title: "Don't insult", color: "#a855f7", category: "mental", schedule: "Every day", xp: "5XP", xpLevel: "Major", icon: "kind", target: 1, targetUnit: "day", imageTone: "warm" },
+  { id: "phone_movie", title: "No phone while watching", color: "#ff6b6b", category: "routine", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "film", target: 1, targetUnit: "day", imageTone: "tech" },
+  { id: "phone_reading", title: "No phone while reading", color: "#39d353", category: "learning", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "book-focus", target: 1, targetUnit: "day", imageTone: "forest" },
+  { id: "ten_goods", title: "10 good things before bed", color: "#a855f7", category: "mental", schedule: "Every night", xp: "3XP", xpLevel: "Minor", icon: "list-heart", target: 10, targetUnit: "things", imageTone: "calm" },
+  { id: "pray", title: "Pray at night", color: "#a855f7", category: "mental", schedule: "Every night", xp: "3XP", xpLevel: "Minor", icon: "pray", target: 1, targetUnit: "day", imageTone: "calm" },
+  { id: "thank", title: "Give thanks", color: "#a855f7", category: "mental", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "heart", target: 1, targetUnit: "day", imageTone: "warm" }
 ];
 
 export const BUILTIN_HABITS = [...CORE_HABITS, ...EXTRA_HABITS];
@@ -335,7 +346,7 @@ export function formatHabitProgress(habit, done) {
   const unit = habit.targetUnit || "";
   if (unit === "min") return done ? `${target}/${target} min` : `0/${target} min`;
   if (unit === "limit") return done ? "1/1" : "0/1";
-  if (unit === "entry" || unit === "day" || unit === "chat" || unit === "meal") {
+  if (unit === "entry" || unit === "day" || unit === "chat" || unit === "meal" || unit === "things") {
     return done ? "1/1" : "0/1";
   }
   return done ? `${target}/${target}` : `0/${target}${unit ? ` ${unit}` : ""}`;

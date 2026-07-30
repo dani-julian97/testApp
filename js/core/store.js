@@ -1,6 +1,7 @@
 import { loadState, saveState, clearState, DEFAULT_STATE, todayKey } from "./storage.js";
 import { CORE_HABITS, getHabit, setCustomHabitsCache } from "../data/habits.js";
 import { evaluateTrophies } from "../data/trophies.js";
+import { applyAspectDelta, emptyAspects } from "../data/aspects.js";
 
 const listeners = new Set();
 let state = loadState();
@@ -76,7 +77,8 @@ export function startPlan(days) {
     planDays: days,
     planStartDate: todayKey(),
     selectedDate: todayKey(),
-    mainTab: "home"
+    mainTab: "home",
+    aspectScores: state.aspectScores || emptyAspects()
   };
   emit();
 }
@@ -86,7 +88,7 @@ export function hasActivePlan() {
 }
 
 export function setMainTab(tab) {
-  state = { ...state, mainTab: tab };
+  state = { ...state, mainTab: tab === "block" ? "tasks" : tab };
   emit();
 }
 
@@ -103,20 +105,24 @@ export function toggleHabitCompletion(habitId, dateKey = state.selectedDate) {
   const day = { ...(state.completions[dateKey] || {}) };
   const habit = getHabit(habitId);
   const xpGain = habit?.xpLevel === "Major" ? 50 : 30;
+  const category = habit?.category || "mental";
+  const wasDone = Boolean(day[habitId]);
 
-  if (day[habitId]) {
+  if (wasDone) {
     delete day[habitId];
     state = {
       ...state,
       completions: { ...state.completions, [dateKey]: day },
-      xp: Math.max(0, state.xp - xpGain)
+      xp: Math.max(0, state.xp - xpGain),
+      aspectScores: applyAspectDelta(state.aspectScores || emptyAspects(), category, -1)
     };
   } else {
     day[habitId] = true;
     state = {
       ...state,
       completions: { ...state.completions, [dateKey]: day },
-      xp: state.xp + xpGain
+      xp: state.xp + xpGain,
+      aspectScores: applyAspectDelta(state.aspectScores || emptyAspects(), category, 1)
     };
   }
 
@@ -142,6 +148,38 @@ export function addJournalEntry(text) {
   state = { ...state, journalEntries: [entry, ...state.journalEntries] };
   emit();
   return entry;
+}
+
+export function addTask({ title, dueDate }) {
+  const task = {
+    id: `t_${Date.now().toString(36)}`,
+    title: title.trim(),
+    dueDate: dueDate || todayKey(),
+    done: false,
+    createdAt: new Date().toISOString()
+  };
+  state = { ...state, tasks: [task, ...state.tasks] };
+  emit();
+  return task;
+}
+
+export function toggleTask(taskId) {
+  state = {
+    ...state,
+    tasks: state.tasks.map((t) =>
+      t.id === taskId ? { ...t, done: !t.done } : t
+    )
+  };
+  emit();
+}
+
+export function deleteTask(taskId) {
+  state = { ...state, tasks: state.tasks.filter((t) => t.id !== taskId) };
+  emit();
+}
+
+export function getAspectScores() {
+  return { ...emptyAspects(), ...(state.aspectScores || {}) };
 }
 
 export function addCustomHabit(habit) {

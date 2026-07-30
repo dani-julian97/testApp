@@ -51,7 +51,15 @@ const ICONS = {
   hourglass: `<path d="M7 3h10v2l-4 5 4 5v2H7v-2l4-5-4-5V3zm2.5 2 2.5 3.2L14.5 5h-5z"/>`,
   typewriter: `<path d="M5 9h14v3h-1v6H6v-6H5V9zm3 5h8v2H8v-2zM8 4h8v4H8V4z"/>`,
   owl: `<path d="M12 4c4 0 7 3 7 8 0 5-3 8-7 8s-7-3-7-8c0-5 3-8 7-8zm-3 7a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm6 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM9 15c1 .8 2 1.2 3 1.2S14 15.8 15 15"/>`,
-  phone: `<path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm0 2v12h8V5H8z"/>`
+  phone: `<path d="M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm0 2v12h8V5H8z"/>`,
+  tasks: `<path d="M4 6h2v2H4V6zm4 0h12v2H8V6zM4 11h2v2H4v-2zm4 0h12v2H8v-2zM4 16h2v2H4v-2zm4 0h12v2H8v-2z"/>`,
+  "calm-speak": `<path d="M4 5h11a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H9l-4 4v-4H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm14 3h2v2h-2V8zm0 4h2v2h-2v-2z"/>`,
+  peace: `<path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2v7.2l5.2 5.2-1.4 1.4L12 13.4l-3.8 3.8-1.4-1.4L12 11.2V4z"/>`,
+  kind: `<path d="M12 21s-7-4.4-9.2-8C.8 9.5 2.6 5.8 6.2 5.5c1.8-.1 3.4.9 4.3 2.1.9-1.2 2.5-2.2 4.3-2.1 3.6.3 5.4 4 3.4 7.5C19 16.6 12 21 12 21zM8.5 11h7v2h-7v-2z"/>`,
+  film: `<path d="M3 5h18v14H3V5zm2 2v2h2V7H5zm0 4v2h2v-2H5zm0 4v2h2v-2H5zm12-8v2h2V7h-2zm0 4v2h2v-2h-2zm0 4v2h2v-2h-2zM9 7h6v10H9V7z"/>`,
+  "book-focus": `<path d="M5 4h9a2 2 0 0 1 2 2v12H7a2 2 0 0 0-2 2V4zm11 0h3v14a2 2 0 0 1-2 2h-1V6a2 2 0 0 0-2-2h2zM8 8h5v2H8V8zm0 4h5v2H8v-2z"/>`,
+  "list-heart": `<path d="M4 6h2v2H4V6zm4 0h10v2H8V6zM4 11h2v2H4v-2zm4 0h6v2H8v-2zm8.5-.5 2 2 3.5-3.5 1.4 1.4-4.9 4.9-3.4-3.4 1.4-1.4zM4 16h2v2H4v-2zm4 0h10v2H8v-2z"/>`,
+  pray: `<path d="M10 3a2 2 0 0 1 2 2v5h1V6a2 2 0 1 1 4 0v8c0 3.5-2.5 6-6 6H9c-2.8 0-5-2-5-5V9a2 2 0 0 1 4 0v4h1V5a2 2 0 0 1 2-2z"/>`
 };
 
 export function iconSvg(name, { size = 24, className = "" } = {}) {

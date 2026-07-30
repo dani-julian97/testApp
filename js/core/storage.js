@@ -1,4 +1,5 @@
 import { CORE_HABITS, setCustomHabitsCache } from "../data/habits.js";
+import { emptyAspects } from "../data/aspects.js";
 
 const STORAGE_KEY = "ikigai_app_v2";
 
@@ -19,6 +20,8 @@ export const DEFAULT_STATE = {
   customHabits: [],
   completions: {},
   journalEntries: [],
+  tasks: [],
+  aspectScores: emptyAspects(),
   selectedDate: todayKey(),
   mainTab: "home",
   xp: 0,
@@ -28,7 +31,6 @@ export const DEFAULT_STATE = {
 export function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    // migrate old key if present
     const legacy = localStorage.getItem("ikigai_onboarding_v1");
     const source = raw || legacy;
     if (!source) {
@@ -36,9 +38,13 @@ export function loadState() {
       return structuredClone(DEFAULT_STATE);
     }
     const parsed = JSON.parse(source);
+    let mainTab = parsed.mainTab || "home";
+    if (mainTab === "block") mainTab = "tasks";
+
     const state = {
       ...structuredClone(DEFAULT_STATE),
       ...parsed,
+      mainTab,
       answers: parsed.answers || {},
       selectedHabitIds: Array.isArray(parsed.selectedHabitIds)
         ? parsed.selectedHabitIds
@@ -46,6 +52,8 @@ export function loadState() {
       customHabits: Array.isArray(parsed.customHabits) ? parsed.customHabits : [],
       completions: parsed.completions || {},
       journalEntries: Array.isArray(parsed.journalEntries) ? parsed.journalEntries : [],
+      tasks: Array.isArray(parsed.tasks) ? parsed.tasks : [],
+      aspectScores: { ...emptyAspects(), ...(parsed.aspectScores || {}) },
       unlockedTrophies: Array.isArray(parsed.unlockedTrophies)
         ? parsed.unlockedTrophies
         : []
