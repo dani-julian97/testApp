@@ -77,7 +77,34 @@
 /* ── Habit detail ────────────────────────────────────── */
 .habit-detail {
   text-align: left;
-  padding-top: var(--space-8);
+  padding-top: var(--space-2);
+}
+
+.habit-detail__hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  margin-bottom: var(--space-5);
+  background: #141414;
+}
+
+.habit-detail__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.habit-detail__hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
 }
 
 .habit-detail__icon {
@@ -89,10 +116,29 @@
   place-items: center;
 }
 
+.habit-detail__icon--on-photo {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  margin: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
 .habit-detail__icon svg {
   width: 52px;
   height: 52px;
   fill: currentColor;
+}
+
+.habit-detail__icon--on-photo svg {
+  width: 28px;
+  height: 28px;
 }
 
 .habit-detail__title {
@@ -782,7 +828,7 @@
   align-items: center;
   gap: var(--space-3);
   width: 100%;
-  min-height: 88px;
+  min-height: 96px;
   padding: 0.9rem 1rem;
   border-radius: 22px;
   overflow: hidden;
@@ -794,47 +840,49 @@
 .habit-row__bg {
   position: absolute;
   inset: 0;
-  opacity: 0.55;
+  z-index: 0;
+  overflow: hidden;
   background:
     radial-gradient(circle at 85% 40%, color-mix(in srgb, var(--habit-color) 55%, transparent), transparent 50%),
     linear-gradient(120deg, #0d0d0d 20%, color-mix(in srgb, var(--habit-color) 25%, #111) 100%);
-  z-index: 0;
 }
 
-.habit-row__bg[data-tone="forest"] {
+.habit-row__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.02);
+  pointer-events: none;
+}
+
+.habit-row__scrim {
+  position: absolute;
+  inset: 0;
   background:
-    radial-gradient(circle at 80% 30%, rgba(57, 211, 83, 0.35), transparent 45%),
-    linear-gradient(115deg, #0a120c, #16301c 60%, #0d1a10);
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(0, 0, 0, 0.45) 48%,
+      rgba(0, 0, 0, 0.28) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.35) 100%
+    );
+  pointer-events: none;
 }
 
-.habit-row__bg[data-tone="tech"] {
-  background:
-    radial-gradient(circle at 85% 40%, rgba(56, 189, 248, 0.28), transparent 45%),
-    linear-gradient(115deg, #0a0e12, #152030 60%, #0b1018);
-}
-
-.habit-row__bg[data-tone="focus"] {
-  background:
-    radial-gradient(circle at 80% 35%, rgba(56, 189, 248, 0.4), transparent 50%),
-    linear-gradient(115deg, #081018, #123048);
-}
-
-.habit-row__bg[data-tone="calm"] {
-  background:
-    radial-gradient(circle at 80% 35%, rgba(168, 85, 247, 0.35), transparent 50%),
-    linear-gradient(115deg, #0d0814, #241536);
-}
-
-.habit-row__bg[data-tone="energy"] {
-  background:
-    radial-gradient(circle at 80% 35%, rgba(248, 113, 113, 0.35), transparent 50%),
-    linear-gradient(115deg, #140a0a, #301818);
-}
-
+.habit-row__bg[data-tone="forest"],
+.habit-row__bg[data-tone="tech"],
+.habit-row__bg[data-tone="focus"],
+.habit-row__bg[data-tone="calm"],
+.habit-row__bg[data-tone="energy"],
 .habit-row__bg[data-tone="warm"] {
-  background:
-    radial-gradient(circle at 80% 35%, rgba(245, 158, 11, 0.35), transparent 50%),
-    linear-gradient(115deg, #120d06, #2a1c0a);
+  /* tone gradients remain as fallback when photo fails */
 }
 
 .habit-row > *:not(.habit-row__bg) {
@@ -842,15 +890,20 @@
   z-index: 1;
 }
 
+.habit-row.is-done .habit-row__photo {
+  filter: saturate(0.85) brightness(0.92);
+}
+
 .habit-row__check {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.45);
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
 }
 
 .habit-row.is-done .habit-row__check {
@@ -879,22 +932,26 @@
   font-size: 1.05rem;
   font-weight: 700;
   margin-bottom: 0.15rem;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
 }
 
 .habit-row__meta {
   font-size: 0.82rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.78);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
 }
 
 .habit-row__icon {
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
   display: grid;
   place-items: center;
   color: #fff;
   flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .habit-row__icon svg {

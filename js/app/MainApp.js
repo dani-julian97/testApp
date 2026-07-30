@@ -15,6 +15,7 @@ import {
   subscribe
 } from "../core/store.js";
 import { getHabit, formatHabitProgress } from "../data/habits.js";
+import { getHabitImageSrc } from "../data/habitImages.js";
 import { TROPHIES, getRank, trophiesForHabit } from "../data/trophies.js";
 import { ASPECT_KEYS, ASPECT_LABELS, aspectColor } from "../data/aspects.js";
 import { createButton } from "../ui/Button.js";
@@ -158,6 +159,7 @@ export function startMainApp(root) {
         const habit = getHabit(id);
         if (!habit) return;
         const done = isHabitDone(id, state.selectedDate);
+        const imageSrc = getHabitImageSrc(habit);
         const row = el(
           "button",
           {
@@ -175,8 +177,27 @@ export function startMainApp(root) {
           [
             el("div", {
               className: "habit-row__bg",
-              attrs: { "data-tone": habit.imageTone || "calm", "aria-hidden": "true" }
-            }),
+              attrs: {
+                "data-tone": habit.imageTone || "calm",
+                "aria-hidden": "true"
+              }
+            }, [
+              el("img", {
+                className: "habit-row__photo",
+                attrs: {
+                  src: imageSrc,
+                  alt: "",
+                  loading: "lazy",
+                  decoding: "async"
+                },
+                events: {
+                  error: (e) => {
+                    e.currentTarget.style.display = "none";
+                  }
+                }
+              }),
+              el("div", { className: "habit-row__scrim" })
+            ]),
             el("div", {
               className: "habit-row__check",
               html: iconSvg("check", { size: 14 })

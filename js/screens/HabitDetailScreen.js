@@ -2,6 +2,7 @@ import { el } from "../ui/dom.js";
 import { createButton } from "../ui/Button.js";
 import { createShell } from "../ui/Shell.js";
 import { getCoreHabit } from "../data/habits.js";
+import { getHabitImageSrc } from "../data/habitImages.js";
 import { iconSvg } from "../ui/icons.js";
 
 export function createHabitDetailView({ goNext, habitId }) {
@@ -43,10 +44,22 @@ export function createHabitDetailView({ goNext, habitId }) {
       style: `--habit-color: ${habit.color}`
     },
     [
-      el("div", {
-        className: "habit-detail__icon",
-        html: iconSvg(habit.icon, { size: 52 })
-      }),
+      el("div", { className: "habit-detail__hero" }, [
+        el("img", {
+          className: "habit-detail__photo",
+          attrs: {
+            src: getHabitImageSrc(habit),
+            alt: "",
+            loading: "eager",
+            decoding: "async"
+          }
+        }),
+        el("div", { className: "habit-detail__hero-scrim" }),
+        el("div", {
+          className: "habit-detail__icon habit-detail__icon--on-photo",
+          html: iconSvg(habit.icon, { size: 36 })
+        })
+      ]),
       el("h1", { className: "habit-detail__title", text: habit.title }),
       benefits,
       stats

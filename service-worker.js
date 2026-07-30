@@ -1,4 +1,4 @@
-const CACHE_NAME = "ikigai-app-v8";
+const CACHE_NAME = "ikigai-app-v9";
 
 const PRECACHE = [
   "./",
@@ -16,6 +16,7 @@ const PRECACHE = [
   "./js/core/haptics.js",
   "./js/core/audio.js",
   "./js/data/habits.js",
+  "./js/data/habitImages.js",
   "./js/data/flow.js",
   "./js/data/trophies.js",
   "./js/data/aspects.js",
@@ -46,7 +47,16 @@ const PRECACHE = [
   "./js/screens/PlanReadyScreen.js",
   "./js/screens/PlanLengthScreen.js",
   "./assets/images/icon-192.png",
-  "./assets/images/welcome.png"
+  "./assets/images/welcome.png",
+  "./assets/images/habits/cold-shower.png",
+  "./assets/images/habits/deep-work.png",
+  "./assets/images/habits/good-diet.png",
+  "./assets/images/habits/meditation.png",
+  "./assets/images/habits/no-doomscroll.png",
+  "./assets/images/habits/reading.png",
+  "./assets/images/habits/running.png",
+  "./assets/images/habits/streching.png",
+  "./assets/images/habits/write-journal.png"
 ];
 
 self.addEventListener("install", (event) => {
