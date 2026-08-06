@@ -7,6 +7,7 @@ import {
   signUp,
   resetPassword,
   resendVerification,
+  verifySignupOtp,
   continueAsGuest
 } from "../core/authStore.js";
 import { toAuthError, validateEmail, validatePassword } from "../services/auth/errors.js";
@@ -23,8 +24,6 @@ import { toAuthError, validateEmail, validatePassword } from "../services/auth/e
 export function createAuthView(opts = {}) {
   let mode = opts.mode || "login";
   let busy = false;
-  let message = "";
-  let messageTone = "error";
 
   const emailInput = el("input", {
     className: "auth-input",
@@ -56,6 +55,19 @@ export function createAuthView(opts = {}) {
     }
   });
 
+  const codeInput = el("input", {
+    className: "auth-input auth-input--code",
+    type: "text",
+    attrs: {
+      placeholder: "6-digit code (optional)",
+      autocomplete: "one-time-code",
+      inputmode: "numeric",
+      maxlength: "8",
+      pattern: "[0-9]*",
+      "aria-label": "Verification code"
+    }
+  });
+
   const status = el("p", { className: "auth-status" });
   const title = el("h1", { className: "screen-title", text: "" });
   const subtitle = el("p", { className: "screen-subtitle", text: "" });
@@ -72,16 +84,16 @@ export function createAuthView(opts = {}) {
   function primaryLabel() {
     if (mode === "signup") return "Create account";
     if (mode === "reset") return "Send reset link";
-    if (mode === "verify") return "Resend email";
+    if (mode === "verify") {
+      return codeInput.value.trim() ? "Verify code" : "I’ve confirmed — log in";
+    }
     return "Log in";
   }
 
   function setMessage(text, tone = "error") {
-    message = text || "";
-    messageTone = tone;
-    status.textContent = message;
-    status.dataset.tone = messageTone;
-    status.style.display = message ? "block" : "none";
+    status.textContent = text || "";
+    status.dataset.tone = tone;
+    status.style.display = text ? "block" : "none";
   }
 
   function rebuild() {
@@ -91,7 +103,7 @@ export function createAuthView(opts = {}) {
         : mode === "reset"
           ? "Reset password"
           : mode === "verify"
-            ? "Verify your email"
+            ? "Confirm your email"
             : "Welcome back";
 
     subtitle.textContent =
@@ -100,14 +112,13 @@ export function createAuthView(opts = {}) {
         : mode === "reset"
           ? "We’ll email you a link to choose a new password."
           : mode === "verify"
-            ? "Check your inbox, then come back to log in."
+            ? "Open the confirmation email, tap the link (or enter a code if your email shows one), then continue here."
             : "Log in to restore your Ikigai plan.";
 
     formFields.replaceChildren();
     if (mode === "signup") formFields.append(nameInput);
-    if (mode !== "verify") formFields.append(emailInput);
+    formFields.append(emailInput);
     if (mode === "login" || mode === "signup") {
-      passwordInput.attrs = passwordInput.attrs || {};
       passwordInput.setAttribute(
         "autocomplete",
         mode === "signup" ? "new-password" : "current-password"
@@ -117,7 +128,14 @@ export function createAuthView(opts = {}) {
       formFields.append(passwordInput);
     }
     if (mode === "verify") {
-      formFields.append(emailInput);
+      formFields.append(passwordInput);
+      passwordInput.setAttribute("autocomplete", "current-password");
+      passwordInput.placeholder = "Your password";
+      codeInput.value = "";
+      formFields.append(codeInput);
+      codeInput.oninput = () => {
+        primaryBtn.textContent = primaryLabel();
+      };
     }
 
     primaryBtn.textContent = primaryLabel();
@@ -150,6 +168,39 @@ export function createAuthView(opts = {}) {
       actions.append(
         createButton({
           label: "Already have an account? Log in",
+          variant: "ghost",
+          onClick: () => {
+            mode = "login";
+            setMessage("");
+            rebuild();
+          }
+        })
+      );
+    } else if (mode === "verify") {
+      actions.append(
+        createButton({
+          label: "Resend confirmation email",
+          variant: "ghost",
+          onClick: async () => {
+            if (busy) return;
+            const email = emailInput.value.trim();
+            if (!validateEmail(email)) {
+              setMessage("Please enter a valid email address.");
+              return;
+            }
+            try {
+              setBusy(true);
+              await resendVerification(email);
+              setMessage("Email resent. Check your inbox (and spam).", "success");
+            } catch (error) {
+              setMessage(toAuthError(error).message);
+            } finally {
+              setBusy(false);
+            }
+          }
+        }),
+        createButton({
+          label: "Back",
           variant: "ghost",
           onClick: () => {
             mode = "login";
@@ -192,6 +243,7 @@ export function createAuthView(opts = {}) {
 
     const email = emailInput.value.trim();
     const password = passwordInput.value;
+    const code = codeInput.value.trim();
 
     try {
       setBusy(true);
@@ -212,8 +264,22 @@ export function createAuthView(opts = {}) {
           setMessage("Please enter a valid email address.");
           return;
         }
-        await resendVerification(email);
-        setMessage("Verification email sent.", "success");
+
+        // Prefer OTP when the user typed a code (needs custom SMTP template)
+        if (code) {
+          await verifySignupOtp(email, code);
+          setMessage("Email verified. You’re signed in.", "success");
+          opts.onSuccess?.();
+          return;
+        }
+
+        // Default Supabase emails only have a link — after tapping it, log in here
+        if (!validatePassword(password)) {
+          setMessage("Enter your password to continue after confirming the email.");
+          return;
+        }
+        await signIn(email, password);
+        opts.onSuccess?.();
         return;
       }
 
@@ -234,7 +300,7 @@ export function createAuthView(opts = {}) {
           mode = "verify";
           rebuild();
           setMessage(
-            "Account created. Verify your email, then log in. Your local progress will sync after sign-in.",
+            "Check your email. Confirm with the link, then return here and tap continue. (A code field appears if you set up custom SMTP.)",
             "success"
           );
           return;
@@ -251,6 +317,10 @@ export function createAuthView(opts = {}) {
       if (friendly.code === "email_unverified") {
         mode = "verify";
         rebuild();
+        setMessage(
+          "Email not confirmed yet. Open the link in your email, then try again.",
+          "info"
+        );
       }
     } finally {
       setBusy(false);

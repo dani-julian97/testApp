@@ -83,9 +83,29 @@ export function createResetPasswordView({ onDone, onCancel } = {}) {
 export function isPasswordRecoveryRedirect() {
   const hash = window.location.hash || "";
   const search = window.location.search || "";
+  const combined = `${hash}?${search}`;
   return (
-    hash.includes("type=recovery") ||
-    hash.includes("recovery") ||
-    search.includes("type=recovery")
+    combined.includes("type=recovery") ||
+    (combined.includes("recovery") && combined.includes("access_token"))
   );
+}
+
+/** Signup / email confirm redirect from default Supabase emails. */
+export function isEmailConfirmRedirect() {
+  const hash = window.location.hash || "";
+  const search = window.location.search || "";
+  const combined = `${hash}?${search}`;
+  return (
+    combined.includes("type=signup") ||
+    combined.includes("type=email") ||
+    (combined.includes("access_token") && !isPasswordRecoveryRedirect())
+  );
+}
+
+export function clearAuthRedirectFromUrl() {
+  const path = `${window.location.pathname}${window.location.search || ""}`.replace(
+    /\?.*(code|token)=.*/,
+    ""
+  );
+  history.replaceState(null, "", path.split("?")[0] || window.location.pathname);
 }

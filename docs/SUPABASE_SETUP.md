@@ -87,10 +87,37 @@ Dashboard → **Authentication → URL Configuration**:
   - `https://dani-julian97.github.io/testApp/**`
   - recovery uses hash `#recovery`
 
-### Email confirmation
+### Email confirmation (Free plan vs OTP codes)
 
-- If **Confirm email** is ON: after signup the user must verify before a session exists. The app shows a verify screen and keeps local progress until login.
-- If OFF: signup returns a session immediately and guest data is migrated/pushed.
+On the **Free plan**, Supabase locks email templates until you add **custom SMTP** (banner: “Set up custom SMTP to edit templates”). Default emails only include a **confirmation link**, not a 6-digit code.
+
+#### Option A — Easiest for development (recommended now)
+
+1. Dashboard → **Authentication → Providers → Email**
+2. Turn **OFF** “Confirm email”
+3. Save
+
+Signup then signs the user in immediately (no email step). Fine while you build the app.
+
+#### Option B — Keep default link emails (no SMTP)
+
+1. **Authentication → URL Configuration**
+   - Site URL: `https://dani-julian97.github.io/testApp/`
+   - Redirect URLs: `https://dani-julian97.github.io/testApp/**`
+2. User signs up → opens email → taps **Confirm email address**
+3. Browser should open Ikigai (“Email confirmed”) or they return to the app and tap **I’ve confirmed — log in**
+
+If the link opens a blank/error page, the Site URL / Redirect URL is wrong.
+
+#### Option C — Real OTP codes (needs free SMTP, e.g. Resend)
+
+1. Create a free [Resend](https://resend.com) account and API key  
+2. Supabase → **Project Settings → Authentication → SMTP Settings** (or “Set up SMTP”)  
+3. Use Resend SMTP (host `smtp.resend.com`, port `465` or `587`, user `resend`, password = API key)  
+4. Then you can edit **Confirm signup** and put `{{ .Token }}` in the body  
+5. In Ikigai, enter that code on the verify screen  
+
+Pro “Upgrade to customize templates on Supabase email” is optional; custom SMTP on Free also unlocks editing.
 
 ## 6. Password reset
 

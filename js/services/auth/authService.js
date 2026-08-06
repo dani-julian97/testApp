@@ -77,6 +77,7 @@ export async function updatePassword(newPassword) {
 
 export async function resendVerification(email) {
   if (!isCloudEnabled()) throw Object.assign(new Error("Cloud not configured"), { code: "not_configured" });
+  if (!validateEmail(email)) throw Object.assign(new Error("Invalid email"), { code: "invalid_email" });
   const supabase = getSupabase();
   const { error } = await supabase.auth.resend({
     type: "signup",
@@ -84,6 +85,32 @@ export async function resendVerification(email) {
     options: { emailRedirectTo: getAuthRedirectUrl("") }
   });
   if (error) throw Object.assign(new Error(toAuthError(error).message), toAuthError(error));
+}
+
+/**
+ * Confirm signup with the 6-digit code from the email (OTP).
+ * Prefer this over confirmation links on GitHub Pages / mobile.
+ */
+export async function verifySignupOtp(email, token) {
+  if (!isCloudEnabled()) throw Object.assign(new Error("Cloud not configured"), { code: "not_configured" });
+  if (!validateEmail(email)) throw Object.assign(new Error("Invalid email"), { code: "invalid_email" });
+
+  const code = String(token || "").replace(/\s/g, "");
+  if (!/^\d{6,8}$/.test(code)) {
+    throw Object.assign(new Error("Enter the 6-digit code from your email."), {
+      code: "invalid_otp"
+    });
+  }
+
+  const supabase = getSupabase();
+  const { data, error } = await supabase.auth.verifyOtp({
+    email: email.trim(),
+    token: code,
+    type: "signup"
+  });
+
+  if (error) throw Object.assign(new Error(toAuthError(error).message), toAuthError(error));
+  return data;
 }
 
 export async function getSession() {

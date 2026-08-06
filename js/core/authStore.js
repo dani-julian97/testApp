@@ -197,6 +197,16 @@ export async function resendVerification(email) {
   return authService.resendVerification(email);
 }
 
+export async function verifySignupOtp(email, token) {
+  setAuth({ lastError: null });
+  const data = await authService.verifySignupOtp(email, token);
+  if (data.session) {
+    applySession(data.session);
+    await hydrateFromCloud({ migrateGuest: true });
+  }
+  return data;
+}
+
 export async function convertGuestToAccount(email, password, profile) {
   const data = await authService.convertGuestToAccount(email, password, profile);
   if (data.session) {
@@ -233,6 +243,7 @@ export const auth = {
   resetPassword,
   updatePassword,
   resendVerification,
+  verifySignupOtp,
   convertGuestToAccount,
   deleteAccount,
   continueAsGuest,

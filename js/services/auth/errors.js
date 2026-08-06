@@ -48,6 +48,17 @@ export function toAuthError(error) {
       message: "Please verify your email before signing in. Check your inbox."
     };
   }
+  if (
+    lower.includes("otp") ||
+    lower.includes("token is") ||
+    lower.includes("invalid token") ||
+    (lower.includes("expired") && (lower.includes("otp") || lower.includes("token") || lower.includes("code")))
+  ) {
+    return {
+      code: "invalid_otp",
+      message: "That code is invalid or expired. Request a new one and try again."
+    };
+  }
   if (lower.includes("rate") || lower.includes("too many")) {
     return {
       code: "rate_limit",

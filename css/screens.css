@@ -1801,6 +1801,14 @@
   opacity: 0.5;
 }
 
+.auth-input--code {
+  letter-spacing: 0.35em;
+  font-size: 1.35rem;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
 .auth-actions {
   display: flex;
   flex-direction: column;

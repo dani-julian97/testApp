@@ -7,6 +7,7 @@ import {
   hasActivePlan
 } from "./store.js";
 import { initAuth, getAuthState } from "./authStore.js";
+import { createButton } from "../ui/Button.js";
 import { haptic } from "./haptics.js";
 import { createWelcomeView } from "../screens/WelcomeScreen.js";
 import { createAgeView } from "../screens/AgeScreen.js";
@@ -24,7 +25,9 @@ import { createPlanLengthView } from "../screens/PlanLengthScreen.js";
 import { createAuthView } from "../screens/AuthScreen.js";
 import {
   createResetPasswordView,
-  isPasswordRecoveryRedirect
+  isPasswordRecoveryRedirect,
+  isEmailConfirmRedirect,
+  clearAuthRedirectFromUrl
 } from "../screens/ResetPasswordScreen.js";
 import { startAmbientAudio, stopAmbientAudio } from "./audio.js";
 import { startMainApp } from "../app/MainApp.js";
@@ -40,26 +43,54 @@ function showSplash(root) {
   );
 }
 
+function showConfirmSuccess(root, onContinue) {
+  clear(root);
+  root.append(
+    el("div", { className: "auth-splash" }, [
+      el("div", { className: "auth-splash__mark", text: "Email confirmed" }),
+      el("p", {
+        className: "auth-splash__copy",
+        text: "You’re verified. Continuing into Ikigai…"
+      }),
+      createButton({
+        label: "Continue",
+        onClick: onContinue
+      })
+    ])
+  );
+}
+
 export async function startApp(root) {
   try {
     showSplash(root);
     await initAuth();
 
     if (isPasswordRecoveryRedirect()) {
+      clearAuthRedirectFromUrl();
       clear(root);
       root.append(
         createResetPasswordView({
           onDone: () => {
-            history.replaceState(null, "", window.location.pathname);
+            clearAuthRedirectFromUrl();
             routeAfterAuth(root);
           },
           onCancel: () => {
-            history.replaceState(null, "", window.location.pathname);
+            clearAuthRedirectFromUrl();
             routeAfterAuth(root);
           }
         })
       );
       return { mode: "recovery" };
+    }
+
+    if (isEmailConfirmRedirect()) {
+      const auth = getAuthState();
+      clearAuthRedirectFromUrl();
+      if (auth.isAuthenticated) {
+        showConfirmSuccess(root, () => routeAfterAuth(root));
+        window.setTimeout(() => routeAfterAuth(root), 1200);
+        return { mode: "email_confirmed" };
+      }
     }
 
     return routeAfterAuth(root);
