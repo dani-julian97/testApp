@@ -1,14 +1,23 @@
 /**
  * Runtime environment for the Ikigai PWA.
- * Values come from js/config/env.local.js (gitignored) via window.__IKIGAI_ENV__.
+ * Load order (see main.js):
+ *   1. env.public.js  — committed, used on GitHub Pages
+ *   2. env.local.js   — gitignored local overrides
  * Never put the service-role key here.
- * Always read live — env.local.js may load after the first module evaluation.
  */
+function normalizeSupabaseUrl(url) {
+  let u = String(url || "").trim();
+  // Common mistake: pasting the REST endpoint instead of the project URL
+  u = u.replace(/\/rest\/v1\/?$/i, "");
+  u = u.replace(/\/+$/, "");
+  return u;
+}
+
 function readEnv() {
   const raw =
     (typeof window !== "undefined" && window.__IKIGAI_ENV__) || {};
   return {
-    SUPABASE_URL: String(raw.SUPABASE_URL || "").trim(),
+    SUPABASE_URL: normalizeSupabaseUrl(raw.SUPABASE_URL),
     SUPABASE_ANON_KEY: String(raw.SUPABASE_ANON_KEY || "").trim(),
     IS_DEV: Boolean(raw.IS_DEV)
   };
@@ -18,7 +27,7 @@ export function getEnv() {
   return readEnv();
 }
 
-/** Live getters so late-loaded env.local.js is visible. */
+/** Live getters so late-loaded env files are visible. */
 export const ENV = {
   get SUPABASE_URL() {
     return readEnv().SUPABASE_URL;
@@ -33,7 +42,12 @@ export const ENV = {
 
 export function isSupabaseConfigured() {
   const e = readEnv();
-  return Boolean(e.SUPABASE_URL && e.SUPABASE_ANON_KEY);
+  const placeholder =
+    !e.SUPABASE_URL ||
+    e.SUPABASE_URL.includes("YOUR_PROJECT") ||
+    !e.SUPABASE_ANON_KEY ||
+    e.SUPABASE_ANON_KEY.includes("YOUR_SUPABASE");
+  return !placeholder;
 }
 
 export function getAuthRedirectUrl(path = "") {

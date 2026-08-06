@@ -20,18 +20,26 @@ function lockSelection() {
   });
 }
 
-/** Load gitignored env.local.js when present (sets window.__IKIGAI_ENV__). */
-async function loadLocalEnv() {
+/** Load env scripts that set window.__IKIGAI_ENV__. Later files override. */
+async function loadEnvScript(path) {
   try {
-    const res = await fetch("./js/config/env.local.js", { cache: "no-store" });
-    if (!res.ok) return;
+    const res = await fetch(path, { cache: "no-store" });
+    if (!res.ok) return false;
     const text = await res.text();
     const script = document.createElement("script");
     script.text = text;
     document.head.appendChild(script);
+    return true;
   } catch {
-    /* guest / offline-only mode */
+    return false;
   }
+}
+
+async function loadEnv() {
+  // Committed public config (GitHub Pages / production)
+  await loadEnvScript("./js/config/env.public.js");
+  // Optional local overrides (gitignored)
+  await loadEnvScript("./js/config/env.local.js");
 }
 
 async function boot() {
@@ -40,7 +48,7 @@ async function boot() {
 
   try {
     lockSelection();
-    await loadLocalEnv();
+    await loadEnv();
     initAmbientAudio();
     const { startApp } = await import("./core/flowController.js");
     await startApp(root);

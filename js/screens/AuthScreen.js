@@ -174,7 +174,7 @@ export function createAuthView(opts = {}) {
 
     if (!isCloudEnabled()) {
       setMessage(
-        "Cloud sync isn’t configured yet. You can continue as a guest.",
+        "Cloud sync isn’t configured. Deploy env.public.js with your Project URL and anon key.",
         "info"
       );
     }
@@ -183,7 +183,10 @@ export function createAuthView(opts = {}) {
   async function submit() {
     if (busy) return;
     if (!isCloudEnabled()) {
-      setMessage("Add your Supabase keys in env.local.js to enable accounts.", "info");
+      setMessage(
+        "Cloud sync isn’t configured. Deploy env.public.js with your Project URL and anon key.",
+        "info"
+      );
       return;
     }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = "ikigai-app-v11";
+const CACHE_NAME = "ikigai-app-v12";
 
 const PRECACHE = [
   "./",
@@ -10,6 +10,7 @@ const PRECACHE = [
   "./css/screens.css",
   "./js/main.js",
   "./js/config/env.js",
+  "./js/config/env.public.js",
   "./js/config/env.local.example.js",
   "./js/lib/supabase/client.js",
   "./js/lib/supabase/types.js",

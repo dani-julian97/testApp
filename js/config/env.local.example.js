@@ -1,9 +1,10 @@
 /**
- * Copy this file to env.local.js and fill in your Supabase project values.
- * env.local.js is gitignored and loaded before the app boots.
+ * Copy to env.local.js for local overrides (gitignored).
+ * For GitHub Pages / production, edit env.public.js (committed).
  *
- * Get URL + anon key: Supabase Dashboard → Project Settings → API
- * Never put the service_role key in this file.
+ * SUPABASE_URL = Project URL only, e.g. https://xxxx.supabase.co
+ * (Do NOT add /rest/v1/)
+ * Never put the service_role key in these files.
  */
 window.__IKIGAI_ENV__ = {
   SUPABASE_URL: "https://YOUR_PROJECT_REF.supabase.co",

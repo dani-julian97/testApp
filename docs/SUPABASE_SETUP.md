@@ -21,23 +21,27 @@ Dashboard → **Project Settings → API**:
 
 ## 3. Configure the app
 
+### Production / GitHub Pages (committed)
+
+Edit `js/config/env.public.js` with your **Project URL** and **anon** key.
+
+```js
+window.__IKIGAI_ENV__ = {
+  SUPABASE_URL: "https://YOUR_PROJECT_REF.supabase.co", // no /rest/v1/
+  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY",
+  IS_DEV: false
+};
+```
+
+The anon key is safe in the browser (protect data with RLS). Never commit `service_role`.
+
+### Local overrides (optional, gitignored)
+
 ```bash
 cp js/config/env.local.example.js js/config/env.local.js
 ```
 
-Edit `js/config/env.local.js`:
-
-```js
-window.__IKIGAI_ENV__ = {
-  SUPABASE_URL: "https://YOUR_PROJECT_REF.supabase.co",
-  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY",
-  IS_DEV: true
-};
-```
-
-`js/config/env.local.js` is gitignored.
-
-Mirror values in `.env.example` for documentation only.
+Load order: `env.public.js` first, then `env.local.js` overrides.
 
 ## 4. Run SQL migrations
 
@@ -77,10 +81,10 @@ Dashboard → **Authentication → Providers → Email**: enable Email.
 
 Dashboard → **Authentication → URL Configuration**:
 
-- **Site URL**: your app origin (e.g. `http://localhost:5500/` or GitHub Pages URL)
+- **Site URL**: your app origin (e.g. `http://localhost:5500/` or `https://dani-julian97.github.io/testApp/`)
 - **Redirect URLs**: include
   - `http://localhost:5500/**`
-  - `https://YOUR_USERNAME.github.io/YOUR_REPO/**`
+  - `https://dani-julian97.github.io/testApp/**`
   - recovery uses hash `#recovery`
 
 ### Email confirmation
