@@ -1,6 +1,15 @@
 import { el } from "./dom.js";
 import { ASPECT_KEYS, ASPECT_LABELS } from "../data/aspects.js";
 
+function buildPoints(keys, values, radius, pointFn) {
+  return keys
+    .map((key, i) => {
+      const v = Math.max(0.05, Math.min(1, values[key] ?? 0));
+      return pointFn(i, radius * v).join(",");
+    })
+    .join(" ");
+}
+
 export function createRadarChart({ values, color = "#ef4444", labels } = {}) {
   const keys = ASPECT_KEYS;
   const labelMap = labels || ASPECT_LABELS;
@@ -29,12 +38,7 @@ export function createRadarChart({ values, color = "#ef4444", labels } = {}) {
     axes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>`;
   });
 
-  const dataPts = keys
-    .map((key, i) => {
-      const v = Math.max(0.05, Math.min(1, values[key] ?? 0));
-      return point(i, radius * v).join(",");
-    })
-    .join(" ");
+  const dataPts = buildPoints(keys, values || {}, radius, point);
 
   let labelSvg = "";
   keys.forEach((key, i) => {
@@ -47,10 +51,26 @@ export function createRadarChart({ values, color = "#ef4444", labels } = {}) {
     <svg viewBox="0 0 ${size} ${size}" role="img" aria-label="Growth radar chart">
       ${grid}
       ${axes}
-      <polygon points="${dataPts}" fill="${color}33" stroke="${color}" stroke-width="2.5"/>
+      <polygon class="radar-data" points="${dataPts}" fill="${color}33" stroke="${color}" stroke-width="2.5"/>
       ${labelSvg}
     </svg>
   `;
 
-  return el("div", { className: "radar-wrap", html: svg });
+  const wrap = el("div", { className: "radar-wrap", html: svg });
+
+  wrap.updateValues = (nextValues, nextColor) => {
+    const poly = wrap.querySelector(".radar-data");
+    if (!poly) return;
+    poly.classList.remove("is-updating");
+    // force reflow for subtle pulse
+    void poly.getBoundingClientRect();
+    poly.setAttribute("points", buildPoints(keys, nextValues || {}, radius, point));
+    if (nextColor) {
+      poly.setAttribute("fill", `${nextColor}33`);
+      poly.setAttribute("stroke", nextColor);
+    }
+    poly.classList.add("is-updating");
+  };
+
+  return wrap;
 }

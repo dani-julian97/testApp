@@ -1,4 +1,4 @@
-const CACHE_NAME = "ikigai-app-v9";
+const CACHE_NAME = "ikigai-app-v10";
 
 const PRECACHE = [
   "./",
@@ -17,6 +17,7 @@ const PRECACHE = [
   "./js/core/audio.js",
   "./js/data/habits.js",
   "./js/data/habitImages.js",
+  "./js/data/progress.js",
   "./js/data/flow.js",
   "./js/data/trophies.js",
   "./js/data/aspects.js",

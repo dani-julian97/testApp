@@ -1,7 +1,8 @@
 import { loadState, saveState, clearState, DEFAULT_STATE, todayKey } from "./storage.js";
 import { CORE_HABITS, getHabit, setCustomHabitsCache } from "../data/habits.js";
 import { evaluateTrophies } from "../data/trophies.js";
-import { applyAspectDelta, emptyAspects } from "../data/aspects.js";
+import { emptyAspects } from "../data/aspects.js";
+import { deriveAspectScores } from "../data/progress.js";
 
 const listeners = new Set();
 let state = loadState();
@@ -105,29 +106,23 @@ export function toggleHabitCompletion(habitId, dateKey = state.selectedDate) {
   const day = { ...(state.completions[dateKey] || {}) };
   const habit = getHabit(habitId);
   const xpGain = habit?.xpLevel === "Major" ? 50 : 30;
-  const category = habit?.category || "mental";
   const wasDone = Boolean(day[habitId]);
 
-  if (wasDone) {
-    delete day[habitId];
-    state = {
-      ...state,
-      completions: { ...state.completions, [dateKey]: day },
-      xp: Math.max(0, state.xp - xpGain),
-      aspectScores: applyAspectDelta(state.aspectScores || emptyAspects(), category, -1)
-    };
-  } else {
-    day[habitId] = true;
-    state = {
-      ...state,
-      completions: { ...state.completions, [dateKey]: day },
-      xp: state.xp + xpGain,
-      aspectScores: applyAspectDelta(state.aspectScores || emptyAspects(), category, 1)
-    };
-  }
+  if (wasDone) delete day[habitId];
+  else day[habitId] = true;
 
-  const unlocked = evaluateTrophies(state);
-  state = { ...state, unlockedTrophies: unlocked };
+  const completions = { ...state.completions, [dateKey]: day };
+  const next = {
+    ...state,
+    completions,
+    xp: wasDone
+      ? Math.max(0, state.xp - xpGain)
+      : state.xp + xpGain
+  };
+  // Persist derived aspect scores from completions (single source of truth)
+  next.aspectScores = deriveAspectScores(next);
+  next.unlockedTrophies = evaluateTrophies(next);
+  state = next;
   emit();
 }
 
@@ -179,7 +174,8 @@ export function deleteTask(taskId) {
 }
 
 export function getAspectScores() {
-  return { ...emptyAspects(), ...(state.aspectScores || {}) };
+  // Prefer live derivation so charts stay aligned with completions
+  return deriveAspectScores(state);
 }
 
 export function addCustomHabit(habit) {

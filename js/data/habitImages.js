@@ -1,12 +1,8 @@
 /**
- * Habit cover images.
- * Dedicated assets live in assets/images/habits/.
- * Habits without a dedicated file fall back by category / related id.
+ * Habit cover images with preload cache to prevent flicker on remounts.
  */
-
 const HABIT_IMAGE_BASE = "./assets/images/habits";
 
-/** Direct habitId → filename */
 const HABIT_IMAGES = {
   reading: "reading.png",
   doomscroll: "no-doomscroll.png",
@@ -17,8 +13,6 @@ const HABIT_IMAGES = {
   coldshower: "cold-shower.png",
   meditate: "meditation.png",
   yoga: "streching.png",
-
-  // Closest visual matches for related habits
   cardio: "running.png",
   walk: "running.png",
   pushups: "running.png",
@@ -47,7 +41,6 @@ const HABIT_IMAGES = {
   nosmoking: "no-doomscroll.png"
 };
 
-/** Category fallback when no habit-specific mapping exists */
 const CATEGORY_IMAGES = {
   physical: "running.png",
   learning: "reading.png",
@@ -57,6 +50,9 @@ const CATEGORY_IMAGES = {
 };
 
 const DEFAULT_IMAGE = "deep-work.png";
+
+/** @type {Map<string, HTMLImageElement>} */
+const preloadCache = new Map();
 
 export function getHabitImageSrc(habitOrId) {
   const habit =
@@ -69,11 +65,6 @@ export function getHabitImageSrc(habitOrId) {
   return `${HABIT_IMAGE_BASE}/${file}`;
 }
 
-export function hasDedicatedHabitImage(habitId) {
-  return Boolean(HABIT_IMAGES[habitId]);
-}
-
-/** All image URLs (for preload / service worker). */
 export function listHabitImageFiles() {
   return [
     "cold-shower.png",
@@ -86,4 +77,19 @@ export function listHabitImageFiles() {
     "streching.png",
     "write-journal.png"
   ].map((f) => `${HABIT_IMAGE_BASE}/${f}`);
+}
+
+/** Warm browser HTTP cache so remounts (if any) still paint instantly. */
+export function preloadHabitImages() {
+  listHabitImageFiles().forEach((src) => {
+    if (preloadCache.has(src)) return;
+    const img = new Image();
+    img.decoding = "async";
+    img.src = src;
+    preloadCache.set(src, img);
+  });
+}
+
+export function hasDedicatedHabitImage(habitId) {
+  return Boolean(HABIT_IMAGES[habitId]);
 }

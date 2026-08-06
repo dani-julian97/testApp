@@ -11,11 +11,18 @@ import {
   addTask,
   toggleTask,
   deleteTask,
-  getAspectScores,
   subscribe
 } from "../core/store.js";
 import { getHabit, formatHabitProgress } from "../data/habits.js";
-import { getHabitImageSrc } from "../data/habitImages.js";
+import { getHabitImageSrc, preloadHabitImages } from "../data/habitImages.js";
+import {
+  getDailyProgress,
+  getPlanDayCircles,
+  getPlanDuration,
+  getPolygonValuesForDate,
+  getOverallPlanCompletion,
+  deriveAspectScores
+} from "../data/progress.js";
 import { TROPHIES, getRank, trophiesForHabit } from "../data/trophies.js";
 import { ASPECT_KEYS, ASPECT_LABELS, aspectColor } from "../data/aspects.js";
 import { createButton } from "../ui/Button.js";
@@ -49,18 +56,16 @@ function weekDates(aroundKey) {
   });
 }
 
-function dayOfYear(dateKey) {
-  const d = new Date(dateKey + "T12:00:00");
-  const start = new Date(d.getFullYear(), 0, 0);
-  return Math.floor((d - start) / 86400000);
-}
-
 export function startMainApp(root) {
   clear(root);
+  preloadHabitImages();
 
   const content = el("div", { className: "main-app__content" });
   const pageHost = el("div", { className: "main-app__page" });
   content.append(pageHost);
+
+  /** Stable Home DOM refs — avoids remounting habit images on completion. */
+  let homeUi = null;
 
   const tabbar = el(
     "nav",
@@ -136,15 +141,120 @@ export function startMainApp(root) {
     root.append(overlay);
   }
 
+  function updateWeekStrip(strip) {
+    const state = getState();
+    strip.querySelectorAll(".week-day").forEach((btn) => {
+      const key = btn.dataset.date;
+      if (!key) return;
+      const ratio = dayCompletionRatio(key);
+      const selected = key === state.selectedDate;
+      btn.classList.toggle("is-selected", selected);
+      btn.classList.toggle("is-complete", ratio >= 1);
+      btn.classList.toggle("is-partial", ratio > 0 && ratio < 1);
+      btn.setAttribute("aria-selected", selected ? "true" : "false");
+    });
+  }
+
+  function syncHabitRow(row, habitId) {
+    const state = getState();
+    const habit = getHabit(habitId);
+    if (!habit || !row) return;
+    const done = isHabitDone(habitId, state.selectedDate);
+    row.classList.toggle("is-done", done);
+    const meta = row.querySelector(".habit-row__meta");
+    if (meta) meta.textContent = formatHabitProgress(habit, done);
+    const check = row.querySelector(".habit-row__check");
+    if (check) {
+      check.classList.remove("is-pop");
+      void check.offsetWidth;
+      if (done) check.classList.add("is-pop");
+    }
+  }
+
   function renderHome() {
     const state = getState();
     const dates = weekDates(state.selectedDate);
     let mode = "habits";
 
     const feed = el("div", { className: "habit-feed" });
+    const rowById = new Map();
+
+    function buildHabitRow(id) {
+      const habit = getHabit(id);
+      if (!habit) return null;
+      const done = isHabitDone(id, getState().selectedDate);
+      const imageSrc = getHabitImageSrc(habit);
+      const row = el(
+        "button",
+        {
+          className: `habit-row${done ? " is-done" : ""}`,
+          type: "button",
+          dataset: { habitId: id },
+          style: `--habit-color:${habit.color}`,
+          events: {
+            click: () => {
+              const before = isHabitDone(id);
+              haptic(before ? "light" : "medium");
+              toggleHabitCompletion(id);
+              // In-place update — keep <img> nodes mounted (no flicker)
+              syncHabitRow(row, id);
+              if (homeUi?.strip) updateWeekStrip(homeUi.strip);
+            }
+          }
+        },
+        [
+          el(
+            "div",
+            {
+              className: "habit-row__bg",
+              attrs: {
+                "data-tone": habit.imageTone || "calm",
+                "aria-hidden": "true"
+              }
+            },
+            [
+              el("img", {
+                className: "habit-row__photo",
+                attrs: {
+                  src: imageSrc,
+                  alt: "",
+                  loading: "eager",
+                  decoding: "async",
+                  fetchpriority: "high"
+                },
+                events: {
+                  error: (e) => {
+                    e.currentTarget.style.display = "none";
+                  }
+                }
+              }),
+              el("div", { className: "habit-row__scrim" })
+            ]
+          ),
+          el("div", {
+            className: "habit-row__check",
+            html: iconSvg("check", { size: 14 })
+          }),
+          el("div", { className: "habit-row__text" }, [
+            el("div", { className: "habit-row__title", text: habit.title }),
+            el("div", {
+              className: "habit-row__meta",
+              text: formatHabitProgress(habit, done)
+            })
+          ]),
+          el("div", {
+            className: "habit-row__icon",
+            html: iconSvg(habit.icon, { size: 18 })
+          })
+        ]
+      );
+      rowById.set(id, row);
+      return row;
+    }
 
     function renderFeed() {
       clear(feed);
+      rowById.clear();
       if (mode === "goals") {
         feed.append(
           el("p", {
@@ -155,68 +265,21 @@ export function startMainApp(root) {
         );
         return;
       }
-      state.selectedHabitIds.forEach((id) => {
-        const habit = getHabit(id);
-        if (!habit) return;
-        const done = isHabitDone(id, state.selectedDate);
-        const imageSrc = getHabitImageSrc(habit);
-        const row = el(
-          "button",
-          {
-            className: `habit-row${done ? " is-done" : ""}`,
-            type: "button",
-            style: `--habit-color:${habit.color}`,
-            events: {
-              click: () => {
-                toggleHabitCompletion(id);
-                haptic(done ? "light" : "medium");
-                render();
-              }
-            }
-          },
-          [
-            el("div", {
-              className: "habit-row__bg",
-              attrs: {
-                "data-tone": habit.imageTone || "calm",
-                "aria-hidden": "true"
-              }
-            }, [
-              el("img", {
-                className: "habit-row__photo",
-                attrs: {
-                  src: imageSrc,
-                  alt: "",
-                  loading: "lazy",
-                  decoding: "async"
-                },
-                events: {
-                  error: (e) => {
-                    e.currentTarget.style.display = "none";
-                  }
-                }
-              }),
-              el("div", { className: "habit-row__scrim" })
-            ]),
-            el("div", {
-              className: "habit-row__check",
-              html: iconSvg("check", { size: 14 })
-            }),
-            el("div", { className: "habit-row__text" }, [
-              el("div", { className: "habit-row__title", text: habit.title }),
-              el("div", {
-                className: "habit-row__meta",
-                text: formatHabitProgress(habit, done)
-              })
-            ]),
-            el("div", {
-              className: "habit-row__icon",
-              html: iconSvg(habit.icon, { size: 18 })
-            })
-          ]
-        );
-        feed.append(row);
+      getState().selectedHabitIds.forEach((id) => {
+        const row = buildHabitRow(id);
+        if (row) feed.append(row);
       });
+    }
+
+    function syncFeedCompletionOnly() {
+      const ids = getState().selectedHabitIds;
+      const needsRebuild =
+        ids.length !== rowById.size || ids.some((id) => !rowById.has(id));
+      if (needsRebuild) {
+        renderFeed();
+        return;
+      }
+      ids.forEach((id) => syncHabitRow(rowById.get(id), id));
     }
 
     const segmented = el("div", { className: "segmented" }, [
@@ -264,14 +327,17 @@ export function startMainApp(root) {
           {
             className: `week-day${selected ? " is-selected" : ""}${
               ratio >= 1 ? " is-complete" : ""
-            }`,
+            }${ratio > 0 && ratio < 1 ? " is-partial" : ""}`,
             type: "button",
+            dataset: { date: key },
             attrs: { role: "option", "aria-selected": selected ? "true" : "false" },
             events: {
               click: () => {
                 setSelectedDate(key);
                 haptic("light");
-                render();
+                updateWeekStrip(strip);
+                // Same habit cards — only sync completion for the new date
+                syncFeedCompletionOnly();
               }
             }
           },
@@ -285,112 +351,179 @@ export function startMainApp(root) {
 
     renderFeed();
 
-    return el("div", { className: "fade-in" }, [
+    const page = el("div", { className: "fade-in" }, [
       el("h1", { className: "todo-title", text: "To-Do" }),
       strip,
       segmented,
       feed
     ]);
+
+    homeUi = { strip, feed, rowById, syncFeedCompletionOnly };
+    return page;
   }
 
   function renderProgress() {
     const state = getState();
-    const year = new Date(state.selectedDate + "T12:00:00").getFullYear();
-    const todayIndex = dayOfYear(state.selectedDate);
-    const aspects = getAspectScores();
-    const color = aspectColor(aspects);
+    const duration = getPlanDuration(state);
+    const circles = getPlanDayCircles(state);
+    const todayValues = getPolygonValuesForDate(state, state.selectedDate || todayKey());
+    const color = aspectColor(todayValues);
+    const overall = getOverallPlanCompletion(state);
+    const todayDaily = getDailyProgress(state, state.selectedDate || todayKey());
 
-    const cards = state.selectedHabitIds.map((id) => {
-      const habit = getHabit(id);
-      if (!habit) return null;
-
-      const cells = [];
-      for (let i = 1; i <= 365; i++) {
-        const d = new Date(year, 0, i);
-        const key = dateKeyFromDate(d);
-        const done = Boolean(state.completions[key]?.[id]);
-        const future = i > todayIndex;
-        cells.push(
-          el("div", {
-            className: `year-grid__cell${done ? " is-done" : ""}${
-              future ? " is-future" : ""
-            }`
-          })
+    const planStrip = el(
+      "div",
+      {
+        className: "plan-days",
+        attrs: {
+          role: "list",
+          "aria-label": `${duration}-day plan progress`
+        }
+      },
+      circles.map((day) => {
+        const pct = day.percentage;
+        return el(
+          "button",
+          {
+            className: `plan-day plan-day--${day.status}`,
+            type: "button",
+            dataset: { date: day.date },
+            style: `--day-pct:${pct}`,
+            attrs: {
+              role: "listitem",
+              "aria-label": `Day ${day.dayIndex + 1}, ${pct}% complete`
+            },
+            events: {
+              click: () => {
+                setSelectedDate(day.date);
+                setMainTab("home");
+                haptic("light");
+                render();
+              }
+            }
+          },
+          [
+            el("span", {
+              className: "plan-day__ring",
+              html:
+                day.status === "complete"
+                  ? iconSvg("check", { size: 12 })
+                  : `<span class="plan-day__num">${day.dayIndex + 1}</span>`
+            }),
+            el("span", {
+              className: "plan-day__fill",
+              attrs: { "aria-hidden": "true" }
+            })
+          ]
         );
-      }
+      })
+    );
 
-      return el(
-        "div",
-        {
-          className: "progress-card",
-          style: `--habit-color:${habit.color}`
-        },
-        [
-          el("div", { className: "progress-card__head" }, [
-            el("div", { className: "progress-card__habit" }, [
-              el("span", { className: "progress-card__dot" }),
-              el("span", { text: habit.title })
-            ]),
-            el("div", { className: "progress-card__year" }, [
-              el("span", { text: String(year) })
-            ])
-          ]),
-          el("div", { className: "year-grid" }, cells)
-        ]
-      );
-    });
+    const radar = createRadarChart({ values: todayValues, color });
+
+    const habitSummaries = state.selectedHabitIds
+      .map((id) => {
+        const habit = getHabit(id);
+        if (!habit) return null;
+        const doneDays = circles.filter(
+          (c) => Boolean(state.completions[c.date]?.[id])
+        ).length;
+        const pct = Math.round((doneDays / duration) * 100);
+        return el(
+          "div",
+          {
+            className: "habit-plan-row",
+            style: `--habit-color:${habit.color}`
+          },
+          [
+            el("span", { className: "habit-plan-row__dot" }),
+            el("span", { className: "habit-plan-row__title", text: habit.title }),
+            el("span", {
+              className: "habit-plan-row__meta",
+              text: `${doneDays}/${duration} · ${pct}%`
+            })
+          ]
+        );
+      })
+      .filter(Boolean);
 
     return el("div", { className: "fade-in" }, [
       el("h1", { className: "progress-page__title", text: "Progress" }),
-      el("button", {
-        className: "growth-link",
-        type: "button",
-        events: {
-          click: () => {
-            haptic("light");
-            showGrowthChart();
-          }
-        }
-      }, [
-        el("span", { className: "growth-link__label", text: "Growth chart" }),
-        el("span", {
-          className: "growth-link__hint",
-          text: "See how each aspect of your life is advancing"
+      el("div", { className: "plan-progress-head" }, [
+        el("div", {
+          className: "plan-progress-head__label",
+          text: `${duration}-day plan`
         }),
-        el("span", {
-          className: "growth-link__chevron",
-          html: iconSvg("chevron", { size: 18 })
+        el("div", {
+          className: "plan-progress-head__stat",
+          text: `${overall}% days fully done · today ${todayDaily.completionPercentage}%`
         })
       ]),
-      el("div", {
-        className: "growth-mini",
-        style: `--growth-color:${color}`
-      }, [
-        createRadarChart({ values: aspects, color }),
-        el("p", {
-          className: "growth-mini__note",
-          text: "Grows slowly with every habit you complete."
-        })
-      ]),
+      planStrip,
+      el(
+        "button",
+        {
+          className: "growth-link",
+          type: "button",
+          events: {
+            click: () => {
+              haptic("light");
+              showGrowthChart();
+            }
+          }
+        },
+        [
+          el("span", { className: "growth-link__label", text: "Growth chart" }),
+          el("span", {
+            className: "growth-link__hint",
+            text: "Today’s habits shape this polygon — tap for details"
+          }),
+          el("span", {
+            className: "growth-link__chevron",
+            html: iconSvg("chevron", { size: 18 })
+          })
+        ]
+      ),
+      el(
+        "div",
+        {
+          className: "growth-mini",
+          style: `--growth-color:${color}`
+        },
+        [
+          radar,
+          el("p", {
+            className: "growth-mini__note",
+            text: "Updates instantly when you complete habits."
+          })
+        ]
+      ),
       el("h2", {
         className: "hint-label",
-        text: "Habits",
+        text: "Habits in this plan",
         style: "font-size:1.1rem;color:#fff;margin:1.25rem 0 1rem;"
       }),
-      ...cards.filter(Boolean)
+      el("div", { className: "habit-plan-list" }, habitSummaries)
     ]);
   }
 
   function showGrowthChart() {
-    const aspects = getAspectScores();
-    const color = aspectColor(aspects);
+    const state = getState();
+    const todayValues = getPolygonValuesForDate(
+      state,
+      state.selectedDate || todayKey()
+    );
+    const cumulative = deriveAspectScores(state);
+    const color = aspectColor(todayValues);
     const overlay = el("div", {
       className: "screen is-active growth-overlay",
       style: "z-index:45;background:#000;"
     });
 
+    const radar = createRadarChart({ values: todayValues, color });
+
     const bars = ASPECT_KEYS.map((key) => {
-      const v = aspects[key] || 0;
+      const v = todayValues[key] || 0;
       return el("div", { className: "growth-bar" }, [
         el("div", { className: "growth-bar__meta" }, [
           el("span", { text: ASPECT_LABELS[key] }),
@@ -417,13 +550,22 @@ export function startMainApp(root) {
           }
         }
       }),
-      el("h1", { className: "screen-title", text: "Your growth" }),
+      el("h1", { className: "growth-panel__title", text: "Today’s polygon" }),
       el("p", {
-        className: "screen-subtitle",
-        text: "Each daily habit nudges these areas a little — patience compounds."
+        className: "growth-panel__sub",
+        text: "Each axis reflects habits completed for the selected day."
       }),
-      createRadarChart({ values: aspects, color }),
-      el("div", { className: "growth-bars" }, bars)
+      radar,
+      el("div", { className: "growth-bars" }, bars),
+      el("p", {
+        className: "hint-label",
+        text: `Lifetime growth average: ${Math.round(
+          (ASPECT_KEYS.reduce((s, k) => s + (cumulative[k] || 0), 0) /
+            ASPECT_KEYS.length) *
+            100
+        )}%`,
+        style: "text-align:center;margin-top:1rem;"
+      })
     ]);
 
     overlay.append(panel);
@@ -716,11 +858,21 @@ export function startMainApp(root) {
     clear(pageHost);
     const tab = getState().mainTab;
     let page;
-    if (tab === "progress") page = renderProgress();
-    else if (tab === "journal") page = renderJournal();
-    else if (tab === "tasks") page = renderTasks();
-    else if (tab === "trophies") page = renderTrophies();
-    else page = renderHome();
+    if (tab === "progress") {
+      homeUi = null;
+      page = renderProgress();
+    } else if (tab === "journal") {
+      homeUi = null;
+      page = renderJournal();
+    } else if (tab === "tasks") {
+      homeUi = null;
+      page = renderTasks();
+    } else if (tab === "trophies") {
+      homeUi = null;
+      page = renderTrophies();
+    } else {
+      page = renderHome();
+    }
     pageHost.append(page);
   }
 
