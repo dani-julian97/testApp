@@ -1,7 +1,15 @@
 import { el } from "../ui/dom.js";
 import { createButton } from "../ui/Button.js";
+import { continueAsGuest, getAuthState } from "../core/authStore.js";
 
-export function createWelcomeView({ goNext }) {
+/**
+ * @param {{
+ *  goNext: () => void,
+ *  openAuth?: (mode: 'login'|'signup') => void
+ * }} api
+ */
+export function createWelcomeView({ goNext, openAuth }) {
+  const auth = getAuthState();
   const image = el("img", {
     className: "welcome__image",
     attrs: {
@@ -11,6 +19,43 @@ export function createWelcomeView({ goNext }) {
       fetchpriority: "high"
     }
   });
+
+  const actions = [
+    createButton({
+      label: "Continue as guest",
+      variant: "primary",
+      onClick: () => {
+        continueAsGuest();
+        goNext();
+      }
+    }),
+    createButton({
+      label: "Log in",
+      variant: "ghost",
+      onClick: () => openAuth?.("login")
+    }),
+    createButton({
+      label: "Create account",
+      variant: "ghost",
+      onClick: () => openAuth?.("signup")
+    })
+  ];
+
+  if (auth.isAuthenticated) {
+    actions.length = 0;
+    actions.push(
+      createButton({
+        label: "Continue where I left off",
+        variant: "primary",
+        onClick: goNext
+      }),
+      createButton({
+        label: "Switch account",
+        variant: "ghost",
+        onClick: () => openAuth?.("login")
+      })
+    );
+  }
 
   return el(
     "section",
@@ -26,11 +71,7 @@ export function createWelcomeView({ goNext }) {
           className: "welcome__copy",
           text: "Ready to reset your life? Take a quick quiz and we'll create your personalized plan."
         }),
-        createButton({
-          label: "Get Started",
-          variant: "primary",
-          onClick: goNext
-        })
+        el("div", { className: "welcome__actions" }, actions)
       ])
     ]
   );

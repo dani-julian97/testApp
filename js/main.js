@@ -1,4 +1,3 @@
-import { startApp } from "./core/flowController.js";
 import { initAmbientAudio } from "./core/audio.js";
 
 function registerServiceWorker() {
@@ -21,14 +20,30 @@ function lockSelection() {
   });
 }
 
-function boot() {
+/** Load gitignored env.local.js when present (sets window.__IKIGAI_ENV__). */
+async function loadLocalEnv() {
+  try {
+    const res = await fetch("./js/config/env.local.js", { cache: "no-store" });
+    if (!res.ok) return;
+    const text = await res.text();
+    const script = document.createElement("script");
+    script.text = text;
+    document.head.appendChild(script);
+  } catch {
+    /* guest / offline-only mode */
+  }
+}
+
+async function boot() {
   const root = document.getElementById("app");
   if (!root) return;
 
   try {
     lockSelection();
+    await loadLocalEnv();
     initAmbientAudio();
-    startApp(root);
+    const { startApp } = await import("./core/flowController.js");
+    await startApp(root);
     registerServiceWorker();
   } catch (error) {
     console.error("Ikigai failed to start:", error);

@@ -6,6 +6,7 @@ import {
   hasUnfinishedOnboarding,
   hasActivePlan
 } from "./store.js";
+import { initAuth, getAuthState } from "./authStore.js";
 import { haptic } from "./haptics.js";
 import { createWelcomeView } from "../screens/WelcomeScreen.js";
 import { createAgeView } from "../screens/AgeScreen.js";
@@ -20,16 +21,48 @@ import { createCelebrationView } from "../screens/CelebrationScreen.js";
 import { createNotificationsView } from "../screens/NotificationsScreen.js";
 import { createPlanReadyView } from "../screens/PlanReadyScreen.js";
 import { createPlanLengthView } from "../screens/PlanLengthScreen.js";
+import { createAuthView } from "../screens/AuthScreen.js";
+import {
+  createResetPasswordView,
+  isPasswordRecoveryRedirect
+} from "../screens/ResetPasswordScreen.js";
 import { startAmbientAudio, stopAmbientAudio } from "./audio.js";
 import { startMainApp } from "../app/MainApp.js";
 
-export function startApp(root) {
+function showSplash(root) {
+  clear(root);
+  root.append(
+    el("div", { className: "auth-splash" }, [
+      el("div", { className: "auth-splash__mark", text: "Ikigai" }),
+      el("p", { className: "auth-splash__copy", text: "Loading your space…" }),
+      el("div", { className: "auth-splash__spinner", attrs: { "aria-hidden": "true" } })
+    ])
+  );
+}
+
+export async function startApp(root) {
   try {
-    if (hasActivePlan()) {
-      startMainApp(root);
-      return { mode: "main" };
+    showSplash(root);
+    await initAuth();
+
+    if (isPasswordRecoveryRedirect()) {
+      clear(root);
+      root.append(
+        createResetPasswordView({
+          onDone: () => {
+            history.replaceState(null, "", window.location.pathname);
+            routeAfterAuth(root);
+          },
+          onCancel: () => {
+            history.replaceState(null, "", window.location.pathname);
+            routeAfterAuth(root);
+          }
+        })
+      );
+      return { mode: "recovery" };
     }
-    return startOnboarding(root);
+
+    return routeAfterAuth(root);
   } catch (error) {
     console.error("Failed to start app:", error);
     root.innerHTML =
@@ -43,6 +76,14 @@ export function startApp(root) {
   }
 }
 
+function routeAfterAuth(root) {
+  if (hasActivePlan()) {
+    startMainApp(root);
+    return { mode: "main" };
+  }
+  return startOnboarding(root);
+}
+
 export function startOnboarding(root) {
   clear(root);
   const host = el("div", {
@@ -53,6 +94,7 @@ export function startOnboarding(root) {
   let currentView = null;
   let animLock = false;
   let choosingPlan = false;
+  let authOverlay = null;
 
   function mountView(factory, { back = false } = {}) {
     if (animLock) return;
@@ -63,7 +105,8 @@ export function startOnboarding(root) {
       goBack,
       refresh: () => render({ replace: true }),
       goToPlanLength,
-      enterMainApp
+      enterMainApp,
+      openAuth
     });
 
     nextEl.classList.add("screen");
@@ -85,6 +128,37 @@ export function startOnboarding(root) {
     }, 320);
   }
 
+  function closeAuthOverlay() {
+    authOverlay?.remove();
+    authOverlay = null;
+  }
+
+  function openAuth(mode = "login") {
+    closeAuthOverlay();
+    authOverlay = el("div", {
+      className: "screen is-active auth-overlay",
+      style: "z-index:50;background:#000;"
+    });
+    const view = createAuthView({
+      mode,
+      onBack: closeAuthOverlay,
+      onGuest: () => {
+        closeAuthOverlay();
+        if (getState().currentStep === 0) goNext();
+      },
+      onSuccess: () => {
+        closeAuthOverlay();
+        if (hasActivePlan()) {
+          enterMainApp();
+          return;
+        }
+        render({ replace: true });
+      }
+    });
+    authOverlay.append(view);
+    root.append(authOverlay);
+  }
+
   function enterMainApp() {
     stopAmbientAudio();
     try {
@@ -103,7 +177,7 @@ export function startOnboarding(root) {
   function goToPlanLength() {
     choosingPlan = true;
     stopAmbientAudio();
-    mountView((api) =>
+    mountView(() =>
       createPlanLengthView({
         onPlanStarted: () => enterMainApp()
       })
@@ -201,17 +275,19 @@ export function startOnboarding(root) {
     }
   });
 
+  // Avoid wrong stack flash: auth already initialized before this runs
+  void getAuthState();
+
   if (hasUnfinishedOnboarding()) {
     render({ replace: true });
   } else if (!getState().isCompleted) {
     setStep(0);
     render({ replace: true });
   } else if (!hasActivePlan()) {
-    // Finished onboarding but never picked plan length
     goToPlanLength();
   } else {
     enterMainApp();
   }
 
-  return { goNext, goBack, render, mode: "onboarding" };
+  return { goNext, goBack, render, mode: "onboarding", openAuth };
 }

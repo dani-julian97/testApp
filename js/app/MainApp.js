@@ -29,6 +29,9 @@ import { createButton } from "../ui/Button.js";
 import { createRadarChart } from "../ui/RadarChart.js";
 import { haptic } from "../core/haptics.js";
 import { createAddHabitView } from "../screens/AddHabitScreen.js";
+import { createAccountView } from "../screens/AccountScreen.js";
+import { createAuthView } from "../screens/AuthScreen.js";
+import { getAuthState } from "../core/authStore.js";
 import { todayKey } from "../core/storage.js";
 
 const TABS = [
@@ -123,6 +126,46 @@ export function startMainApp(root) {
       item.classList.toggle("is-active", item.dataset.tab === active);
     });
     fab.style.display = active === "home" ? "grid" : "none";
+  }
+
+  async function restartApp() {
+    app.remove();
+    const { startApp } = await import("../core/flowController.js");
+    await startApp(root);
+  }
+
+  function showAccount() {
+    const overlay = el("div", {
+      className: "screen is-active",
+      style: "z-index:48;background:#000;"
+    });
+    const view = createAccountView({
+      onBack: () => overlay.remove(),
+      onSignedOut: async () => {
+        overlay.remove();
+        await restartApp();
+      }
+    });
+    overlay.append(view);
+    root.append(overlay);
+  }
+
+  function showAuth(mode = "login") {
+    const overlay = el("div", {
+      className: "screen is-active",
+      style: "z-index:49;background:#000;"
+    });
+    const view = createAuthView({
+      mode,
+      onBack: () => overlay.remove(),
+      onGuest: () => overlay.remove(),
+      onSuccess: async () => {
+        overlay.remove();
+        await restartApp();
+      }
+    });
+    overlay.append(view);
+    root.append(overlay);
   }
 
   function showAddHabit() {
@@ -352,7 +395,21 @@ export function startMainApp(root) {
     renderFeed();
 
     const page = el("div", { className: "fade-in" }, [
-      el("h1", { className: "todo-title", text: "To-Do" }),
+      el("div", { className: "home-head" }, [
+        el("h1", { className: "todo-title", text: "To-Do" }),
+        el("button", {
+          className: "account-chip",
+          type: "button",
+          text: getAuthState().isGuest ? "Guest" : "Account",
+          events: {
+            click: () => {
+              haptic("light");
+              if (getAuthState().isGuest) showAuth("signup");
+              else showAccount();
+            }
+          }
+        })
+      ]),
       strip,
       segmented,
       feed
@@ -448,7 +505,20 @@ export function startMainApp(root) {
       .filter(Boolean);
 
     return el("div", { className: "fade-in" }, [
-      el("h1", { className: "progress-page__title", text: "Progress" }),
+      el("div", { className: "progress-page__head" }, [
+        el("h1", { className: "progress-page__title", text: "Progress" }),
+        el("button", {
+          className: "account-chip",
+          type: "button",
+          text: getAuthState().isAuthenticated ? "Account" : "Account / Sync",
+          events: {
+            click: () => {
+              haptic("light");
+              showAccount();
+            }
+          }
+        })
+      ]),
       el("div", { className: "plan-progress-head" }, [
         el("div", {
           className: "plan-progress-head__label",

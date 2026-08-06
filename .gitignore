@@ -1,0 +1,16 @@
+# Environment
+.env
+.env.local
+.env.*.local
+js/config/env.local.js
+
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# Dependencies / build (if added later)
+node_modules/
+dist/
+.supabase/
