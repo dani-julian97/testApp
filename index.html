@@ -13,6 +13,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Ikigai">
   <link rel="apple-touch-icon" href="./assets/images/icon-192.png">
+  <script>
+    (function () {
+      var standalone =
+        window.navigator.standalone === true ||
+        window.matchMedia("(display-mode: standalone)").matches;
+      if (standalone) document.documentElement.classList.add("is-standalone");
+    })();
+  </script>
 
   <link rel="stylesheet" href="./css/tokens.css">
   <link rel="stylesheet" href="./css/base.css">

@@ -1,5 +1,5 @@
 /** App release version shown in the UI. */
-export const APP_VERSION = "1.0.2";
+export const APP_VERSION = "1.0.3";
 
 export function formatAppVersion() {
   return `v${APP_VERSION}`;

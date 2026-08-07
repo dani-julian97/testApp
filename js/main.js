@@ -46,6 +46,34 @@ async function boot() {
   const root = document.getElementById("app");
   if (!root) return;
 
+  const standalone =
+    window.navigator.standalone === true ||
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia("(display-mode: fullscreen)").matches;
+
+  if (standalone) {
+    document.documentElement.classList.add("is-standalone");
+  }
+
+  /** Measure safe-area; iOS sometimes reports 0 in standalone — fall back to 34px. */
+  function syncSafeArea() {
+    const probe = document.createElement("div");
+    probe.style.cssText =
+      "position:fixed;visibility:hidden;pointer-events:none;" +
+      "padding-bottom:constant(safe-area-inset-bottom);" +
+      "padding-bottom:env(safe-area-inset-bottom,0px);";
+    document.body.appendChild(probe);
+    let sab = Number.parseFloat(getComputedStyle(probe).paddingBottom) || 0;
+    probe.remove();
+    if (standalone && sab < 16) sab = 34;
+    document.documentElement.style.setProperty("--sab", `${sab}px`);
+    document.documentElement.style.setProperty("--safe-bottom", `${sab}px`);
+  }
+
+  syncSafeArea();
+  window.addEventListener("resize", syncSafeArea);
+  window.visualViewport?.addEventListener("resize", syncSafeArea);
+
   try {
     lockSelection();
     await loadEnv();

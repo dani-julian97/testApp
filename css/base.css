@@ -7,16 +7,25 @@
 }
 
 /*
- * iOS PWA: pin html/body to the physical screen. Do NOT lock height to
- * window.innerHeight — that leaves a dead band under the tab bar on
- * home-screen / standalone.
+ * iOS Home Screen PWA bug (WebKit): with viewport-fit=cover, 100dvh / inset:0 /
+ * -webkit-fill-available resolve to “screen minus bottom safe-area”, leaving a
+ * dead black band under the UI. Compensate by adding env(safe-area-inset-bottom)
+ * back onto the shell height (see WebKit 254868).
  */
+:root {
+  --sab: env(safe-area-inset-bottom, 0px);
+  --shell-h: 100dvh;
+}
+
+html.is-standalone {
+  --shell-h: calc(100dvh + var(--sab));
+}
+
 html,
 body {
-  position: fixed;
-  inset: 0;
   width: 100%;
-  height: 100%;
+  height: var(--shell-h);
+  min-height: var(--shell-h);
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -29,6 +38,12 @@ html {
 }
 
 body {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: var(--shell-h);
   font-family: var(--font-body);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
@@ -75,16 +90,23 @@ a {
 
 #app {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   width: 100%;
-  height: 100%;
+  height: var(--shell-h);
+  min-height: var(--shell-h);
   overflow: hidden;
   background: #000000;
 }
 
 .screen {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   opacity: 0;
@@ -141,5 +163,12 @@ a {
 
   .screen {
     transform: none !important;
+  }
+}
+
+/* display-mode fallback when navigator.standalone is unavailable */
+@media all and (display-mode: standalone) {
+  :root {
+    --shell-h: calc(100dvh + var(--sab));
   }
 }
