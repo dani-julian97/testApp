@@ -15,6 +15,7 @@ import { isCloudEnabled } from "../lib/supabase/client.js";
 import { toAuthError, validateEmail, validatePassword } from "../services/auth/errors.js";
 import { getPlanDuration, formatPathLabel } from "../data/progress.js";
 import { haptic } from "../core/haptics.js";
+import { formatAppVersion } from "../config/version.js";
 
 /**
  * @param {{ onBack?: () => void, onSignedOut?: () => void }} opts
@@ -68,6 +69,7 @@ export function createAccountView(opts = {}) {
       row("Path", app.planDays ? formatPathLabel(duration) : "Not started"),
       row("Started", app.planStartDate || "—"),
       row("Current day", app.planDays ? String(planDay) : "—"),
+      row("Version", formatAppVersion()),
       row(
         "Cloud sync",
         !isCloudEnabled()

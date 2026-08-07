@@ -2,6 +2,7 @@ import { el } from "../ui/dom.js";
 import { createButton } from "../ui/Button.js";
 import { continueAsGuest, getAuthState } from "../core/authStore.js";
 import { hasActivePlan } from "../core/store.js";
+import { formatAppVersion } from "../config/version.js";
 
 /**
  * @param {{
@@ -99,7 +100,11 @@ export function createWelcomeView({ goNext, openAuth, enterMainApp }) {
           className: "welcome__copy",
           text: copy
         }),
-        el("div", { className: "welcome__actions" }, actions)
+        el("div", { className: "welcome__actions" }, actions),
+        el("p", {
+          className: "welcome__version",
+          text: formatAppVersion()
+        })
       ])
     ]
   );

@@ -35,7 +35,6 @@ import { createAccountView } from "../screens/AccountScreen.js";
 import { createAuthView } from "../screens/AuthScreen.js";
 import { getAuthState } from "../core/authStore.js";
 import { todayKey } from "../core/storage.js";
-import { formatAppVersion } from "../config/version.js";
 
 const TABS = [
   { id: "home", label: "Home", icon: "home" },
@@ -451,10 +450,6 @@ export function startMainApp(root) {
           el("p", {
             className: "home-plan-meta",
             text: `${formatPathLabel(duration)} · Day ${planDay} of ${duration} · Today ${todayDaily.completionPercentage}%`
-          }),
-          el("p", {
-            className: "home-version",
-            text: formatAppVersion()
           })
         ]),
         el("button", {

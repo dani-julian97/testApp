@@ -1798,6 +1798,14 @@
   width: 100%;
 }
 
+.welcome__version {
+  margin-top: 0.85rem;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
 .auth-screen,
 .account-screen {
   display: flex;
@@ -1889,16 +1897,8 @@
 .home-plan-meta {
   font-size: 0.82rem;
   color: var(--text-muted);
-  margin-bottom: 0.15rem;
-  line-height: 1.35;
-}
-
-.home-version {
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.35);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
   margin-bottom: var(--space-3);
+  line-height: 1.35;
 }
 
 .account-chip {
