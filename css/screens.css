@@ -694,6 +694,7 @@
     radial-gradient(ellipse 80% 40% at 50% -10%, rgba(60, 90, 60, 0.35), transparent 55%),
     #000;
   z-index: 2;
+  overflow: hidden;
 }
 
 .main-app__content {
@@ -702,8 +703,6 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  /* Leave room for fixed tabbar + home indicator */
-  padding-bottom: calc(3.75rem + var(--safe-bottom));
 }
 
 .main-app__page {
@@ -720,48 +719,26 @@
 }
 
 /*
- * Bottom bleed: paints solid black from the physical bottom upward so there is
- * never a “gap” under the tab bar on iOS Safari / PWA.
- */
-.bottom-bleed {
-  position: fixed;
-  left: 0;
-  right: 0;
-  /* Hang below CSS bottom so paint survives Safari toolbar / viewport shifts */
-  bottom: -80px;
-  width: 100%;
-  height: 200px;
-  background: #000000;
-  z-index: 9998;
-  pointer-events: none;
-}
-
-/*
- * Tab bar on top of the bleed — same black, edge-to-edge.
- * Icons sit above the home indicator via padding-bottom.
+ * Flex footer: glued to the bottom of .main-app (full shell height).
+ * Only real env(safe-area) padding — never invent extra px (that created the gap).
  */
 .tabbar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  z-index: 10000;
+  position: relative;
+  flex: 0 0 auto;
+  z-index: 20;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0;
   margin: 0;
+  width: 100%;
   padding-top: 0.5rem;
   padding-left: 0.35rem;
   padding-right: 0.35rem;
-  /* constant() first for older iOS, then env() */
-  padding-bottom: max(34px, constant(safe-area-inset-bottom));
-  padding-bottom: max(34px, env(safe-area-inset-bottom, 0px));
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: #000000;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   box-sizing: border-box;
-  /* Extra paint below the bar box (in case bottom:0 is short of the screen) */
-  box-shadow: 0 120px 0 40px #000000;
 }
 
 .tabbar__item {
@@ -1044,10 +1021,10 @@
 }
 
 .fab-add {
-  position: fixed;
+  position: absolute;
   right: calc(var(--safe-right) + 1.1rem);
-  bottom: calc(4.25rem + var(--safe-bottom));
-  z-index: 10001;
+  bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px) + 0.5rem);
+  z-index: 25;
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -1056,7 +1033,6 @@
   display: grid;
   place-items: center;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
-  z-index: 25;
 }
 
 .fab-add svg {
