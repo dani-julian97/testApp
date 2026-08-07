@@ -703,6 +703,8 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* Room for fixed tabbar (icons + home-indicator pad) */
+  padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 .main-app__page {
@@ -719,26 +721,31 @@
 }
 
 /*
- * Flex footer: glued to the bottom of .main-app (full shell height).
- * Only real env(safe-area) padding — never invent extra px (that created the gap).
+ * Fixed to the real viewport bottom (html/body are position:fixed; inset:0).
+ * Elevated fill so icons + home-indicator band read as one continuous bar,
+ * not “icons floating over empty black”.
  */
 .tabbar {
-  position: relative;
-  flex: 0 0 auto;
-  z-index: 20;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 10000;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0;
   margin: 0;
-  width: 100%;
-  padding-top: 0.5rem;
+  padding-top: 0.55rem;
   padding-left: 0.35rem;
   padding-right: 0.35rem;
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  background: #000000;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: #141414;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   box-sizing: border-box;
+  /* Paint past the CSS edge in case the webview is 1–N px short */
+  box-shadow: 0 48px 0 0 #141414;
 }
 
 .tabbar__item {
@@ -1021,10 +1028,10 @@
 }
 
 .fab-add {
-  position: absolute;
+  position: fixed;
   right: calc(var(--safe-right) + 1.1rem);
   bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px) + 0.5rem);
-  z-index: 25;
+  z-index: 10001;
   width: 52px;
   height: 52px;
   border-radius: 50%;

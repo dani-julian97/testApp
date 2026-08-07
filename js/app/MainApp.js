@@ -62,23 +62,15 @@ function weekDates(aroundKey) {
 }
 
 function removeDockedChrome() {
-  /* Legacy cleanup if an older build left chrome on <body> */
   document
     .querySelectorAll("body > .tabbar, body > .fab-add, body > .bottom-bleed")
     .forEach((node) => node.remove());
-}
-
-function syncAppHeight() {
-  /* Lock shell to the real layout height (avoids iOS “floating” bottom chrome). */
-  const h = window.innerHeight;
-  document.documentElement.style.setProperty("--app-height", `${h}px`);
 }
 
 export function startMainApp(root) {
   clear(root);
   removeDockedChrome();
   preloadHabitImages();
-  syncAppHeight();
 
   const content = el("div", { className: "main-app__content" });
   const pageHost = el("div", { className: "main-app__page" });
@@ -126,27 +118,52 @@ export function startMainApp(root) {
     }
   });
 
-  /* Tab bar is a flex footer inside the shell — sits on the real bottom edge.
-     Do NOT invent extra safe-area padding when env() is 0 (that was the gap). */
-  const app = el("div", { className: "main-app screen is-active" }, [
-    content,
-    tabbar,
-    fab
-  ]);
+  const app = el("div", { className: "main-app screen is-active" }, [content]);
   root.append(app);
+  /* Dock to <body> so bottom:0 is the screen edge (html/body are fixed inset 0). */
+  document.body.append(tabbar, fab);
 
-  window.addEventListener("resize", syncAppHeight);
-  window.visualViewport?.addEventListener("resize", syncAppHeight);
-  window.visualViewport?.addEventListener("scroll", syncAppHeight);
+  function syncTabbarSafeArea() {
+    const probe = document.createElement("div");
+    probe.style.cssText =
+      "position:fixed;visibility:hidden;pointer-events:none;" +
+      "padding-bottom:constant(safe-area-inset-bottom);" +
+      "padding-bottom:env(safe-area-inset-bottom,0px);";
+    document.body.appendChild(probe);
+    const safe = Number.parseFloat(getComputedStyle(probe).paddingBottom) || 0;
+    probe.remove();
+
+    const standalone =
+      window.navigator.standalone === true ||
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia("(display-mode: fullscreen)").matches;
+
+    /*
+     * Home-screen iPhone: if env() is 0 (bug / missing cover), use 34px so the
+     * bar background still paints through the home-indicator band.
+     * Safari-in-tab: trust 0 — inventing pad there creates a fake gap.
+     */
+    let pad = safe;
+    if (standalone && safe < 16) pad = 34;
+
+    tabbar.style.paddingBottom = `${pad}px`;
+    content.style.paddingBottom = `calc(3.5rem + ${pad}px)`;
+    fab.style.bottom = `calc(4.1rem + ${pad}px)`;
+  }
+
+  syncTabbarSafeArea();
+  window.addEventListener("resize", syncTabbarSafeArea);
+  window.visualViewport?.addEventListener("resize", syncTabbarSafeArea);
+  window.visualViewport?.addEventListener("scroll", syncTabbarSafeArea);
 
   let unsub = subscribe(() => {
     /* store already saved; render on explicit actions */
   });
 
   function teardownMainChrome() {
-    window.removeEventListener("resize", syncAppHeight);
-    window.visualViewport?.removeEventListener("resize", syncAppHeight);
-    window.visualViewport?.removeEventListener("scroll", syncAppHeight);
+    window.removeEventListener("resize", syncTabbarSafeArea);
+    window.visualViewport?.removeEventListener("resize", syncTabbarSafeArea);
+    window.visualViewport?.removeEventListener("scroll", syncTabbarSafeArea);
     removeDockedChrome();
     unsub?.();
     app.remove();
