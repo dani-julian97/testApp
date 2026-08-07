@@ -62,7 +62,9 @@ function weekDates(aroundKey) {
 }
 
 function removeDockedChrome() {
-  document.querySelectorAll(".tabbar, .fab-add").forEach((node) => node.remove());
+  document
+    .querySelectorAll(".tabbar, .fab-add, .bottom-bleed")
+    .forEach((node) => node.remove());
 }
 
 export function startMainApp(root) {
@@ -76,6 +78,12 @@ export function startMainApp(root) {
 
   /** Stable Home DOM refs — avoids remounting habit images on completion. */
   let homeUi = null;
+
+  /** Forces black paint from the physical bottom up (kills iOS gap under tabbar). */
+  const bottomBleed = el("div", {
+    className: "bottom-bleed",
+    attrs: { "aria-hidden": "true" }
+  });
 
   const tabbar = el(
     "nav",
@@ -118,11 +126,10 @@ export function startMainApp(root) {
 
   const app = el("div", { className: "main-app screen is-active" }, [content]);
   root.append(app);
-  // Dock to <body> so fixed bottom is the real viewport edge (not clipped by #app)
-  document.body.append(tabbar, fab);
+  // Bleed first (behind), then tabbar/fab on top — all on <body>
+  document.body.append(bottomBleed, tabbar, fab);
 
   function syncTabbarSafeArea() {
-    // Read computed safe-area; fall back on iOS when env() reports 0
     const probe = document.createElement("div");
     probe.style.cssText =
       "position:fixed;visibility:hidden;padding-bottom:constant(safe-area-inset-bottom);padding-bottom:env(safe-area-inset-bottom,0px);";
@@ -134,9 +141,23 @@ export function startMainApp(root) {
     const standalone =
       window.navigator.standalone === true ||
       window.matchMedia("(display-mode: standalone)").matches;
-    // Home-indicator phones need ~34px when Safari reports 0
-    const pad = safe > 0 ? safe : isIos || standalone ? 34 : 0;
+
+    // Always keep a solid pad on phones so the bar paints through the home-indicator band
+    let pad = safe;
+    if (pad < 20 && (isIos || standalone)) pad = 34;
+    if (pad < 12) pad = 12;
+
+    // Extra bleed height: cover any residual gap under the CSS viewport
+    let extra = 0;
+    if (window.visualViewport) {
+      const vv = window.visualViewport;
+      extra = Math.max(0, window.innerHeight - (vv.offsetTop + vv.height));
+    }
+    // Tall enough to cover tabbar + home indicator + any viewport shortfall
+    const bleedH = Math.max(180, pad + 100 + extra);
+
     tabbar.style.paddingBottom = `${pad}px`;
+    bottomBleed.style.height = `${bleedH}px`;
     content.style.paddingBottom = `calc(3.75rem + ${pad}px)`;
     fab.style.bottom = `calc(4.25rem + ${pad}px)`;
   }
