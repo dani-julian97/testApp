@@ -37,6 +37,8 @@ const HABIT_IMAGES = {
   ten_goods: "write-journal.png",
   nosnooze: "write-journal.png",
   phone_movie: "no-doomscroll.png",
+  noscreens_bed: "no-doomscroll.png",
+  nofap: "meditation.png",
   noalcohol: "good-diet.png",
   nosmoking: "no-doomscroll.png"
 };

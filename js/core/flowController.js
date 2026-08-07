@@ -115,7 +115,12 @@ function routeAfterAuth(root) {
   return startOnboarding(root);
 }
 
-export function startOnboarding(root) {
+/** After logout — cinematic welcome, even if a local plan still exists. */
+export function showWelcomeGate(root) {
+  return startOnboarding(root, { forceWelcome: true });
+}
+
+export function startOnboarding(root, { forceWelcome = false } = {}) {
   clear(root);
   const host = el("div", {
     style: "position:relative;width:100%;height:100%;"
@@ -298,7 +303,7 @@ export function startOnboarding(root) {
 
   window.history.pushState({ ikigai: true }, "");
   window.addEventListener("popstate", () => {
-    if (hasActivePlan()) return;
+    if (hasActivePlan() && !forceWelcome) return;
     const { currentStep } = getState();
     if (currentStep > 0 || choosingPlan) {
       window.history.pushState({ ikigai: true }, "");
@@ -308,6 +313,13 @@ export function startOnboarding(root) {
 
   // Avoid wrong stack flash: auth already initialized before this runs
   void getAuthState();
+
+  if (forceWelcome) {
+    setStep(0);
+    startAmbientAudio();
+    render({ replace: true });
+    return { goNext, goBack, render, mode: "welcome_gate", openAuth };
+  }
 
   if (hasUnfinishedOnboarding()) {
     render({ replace: true });

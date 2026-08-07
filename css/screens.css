@@ -671,9 +671,12 @@
 
 /* ── Main app shell ──────────────────────────────────── */
 .main-app {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 100dvh;
+  min-height: 100svh;
   background:
     radial-gradient(ellipse 80% 40% at 50% -10%, rgba(60, 90, 60, 0.35), transparent 55%),
     #000;
@@ -696,12 +699,12 @@
   padding:
     calc(var(--safe-top) + var(--space-4))
     calc(var(--safe-right) + var(--space-4))
-    calc(88px + var(--safe-bottom))
+    calc(96px + max(0.75rem, var(--safe-bottom)))
     calc(var(--safe-left) + var(--space-4));
 }
 
 .tabbar {
-  position: absolute;
+  position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
@@ -711,10 +714,12 @@
   gap: 0;
   padding:
     0.55rem 0.4rem
-    calc(0.55rem + var(--safe-bottom));
-  background: rgba(12, 12, 12, 0.92);
+    max(0.75rem, var(--safe-bottom));
+  background: rgba(12, 12, 12, 0.96);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px);
+  /* Fill any remaining gap under the bar on some WebViews */
+  box-shadow: 0 1px 0 0 rgba(12, 12, 12, 0.96);
 }
 
 .tabbar__item {
@@ -997,7 +1002,7 @@
 .fab-add {
   position: fixed;
   right: calc(var(--safe-right) + 1.1rem);
-  bottom: calc(88px + var(--safe-bottom));
+  bottom: calc(96px + max(0.75rem, var(--safe-bottom)));
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -1838,15 +1843,27 @@
 .home-head,
 .progress-page__head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.25rem;
 }
 
+.home-head__titles {
+  min-width: 0;
+  flex: 1;
+}
+
 .home-head .todo-title,
 .progress-page__head .progress-page__title {
-  margin-bottom: 0;
+  margin-bottom: 0.2rem;
+}
+
+.home-plan-meta {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+  line-height: 1.35;
 }
 
 .account-chip {

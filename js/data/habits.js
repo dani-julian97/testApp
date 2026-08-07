@@ -231,6 +231,70 @@ export const CORE_HABITS = [
       format: (v) =>
         v === 0 ? "Never" : v === 7 ? "Every day" : `${v} time${v === 1 ? "" : "s"} a week`
     }
+  },
+  {
+    id: "nofap",
+    title: "Do not fap",
+    color: "#a855f7",
+    category: "mental",
+    schedule: "Every day",
+    xp: "5XP",
+    xpLevel: "Major",
+    icon: "nofap",
+    target: 1,
+    targetUnit: "day",
+    imageTone: "calm",
+    benefits: [
+      "Build sexual discipline and self-control",
+      "Reduce brain fog and boost confidence",
+      "Redirect energy into your goals and habits"
+    ],
+    stats: [
+      { label: "Discipline", value: "+74%" },
+      { label: "Focus", value: "+58%" },
+      { label: "Confidence", value: "+65%" }
+    ],
+    baseline: {
+      questionId: "nofap_streak_goal",
+      question: "How many clean days in a row do you want to aim for?",
+      min: 1,
+      max: 90,
+      step: 1,
+      defaultValue: 21,
+      format: (v) => `${v} day${v === 1 ? "" : "s"}`
+    }
+  },
+  {
+    id: "noscreens_bed",
+    title: "No screens before bed",
+    color: "#38bdf8",
+    category: "routine",
+    schedule: "Every night · last 30 min",
+    xp: "3XP",
+    xpLevel: "Minor",
+    icon: "bed",
+    target: 30,
+    targetUnit: "min",
+    imageTone: "tech",
+    benefits: [
+      "Protect melatonin and fall asleep faster",
+      "Stop late-night scrolling before lights out",
+      "Wake up clearer with a calmer nervous system"
+    ],
+    stats: [
+      { label: "Sleep quality", value: "+72%" },
+      { label: "Morning energy", value: "+61%" },
+      { label: "Screen freeness", value: "+80%" }
+    ],
+    baseline: {
+      questionId: "screens_before_bed",
+      question: "How many minutes of screen time do you usually have before sleep?",
+      min: 0,
+      max: 120,
+      step: 5,
+      defaultValue: 45,
+      format: (v) => (v === 0 ? "None" : `${v} minute${v === 1 ? "" : "s"}`)
+    }
   }
 ];
 
@@ -261,7 +325,6 @@ export const EXTRA_HABITS = [
   { id: "meditate", title: "Meditate", color: "#a855f7", category: "mental", schedule: "Every day · 10 min", xp: "5XP", xpLevel: "Major", icon: "meditate", target: 10, targetUnit: "min", imageTone: "calm" },
   { id: "study", title: "Study", color: "#a855f7", category: "mental", schedule: "Weekdays · 45 min", xp: "5XP", xpLevel: "Major", icon: "grad", target: 45, targetUnit: "min", imageTone: "focus" },
   { id: "breaths", title: "Take 5 deep breaths", color: "#a855f7", category: "mental", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "breath", target: 5, targetUnit: "breaths", imageTone: "calm" },
-  { id: "nofap", title: "No Fap", color: "#a855f7", category: "mental", schedule: "Every day", xp: "5XP", xpLevel: "Major", icon: "nofap", target: 1, targetUnit: "day", imageTone: "calm" },
   { id: "friends", title: "Chat with friends", color: "#a855f7", category: "mental", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "friends", target: 1, targetUnit: "chat", imageTone: "warm" },
   { id: "nosnooze", title: "No Snooze", color: "#a855f7", category: "mental", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "bed", target: 1, targetUnit: "day", imageTone: "warm" },
   { id: "gratitude", title: "Gratitude", color: "#a855f7", category: "mental", schedule: "Every day", xp: "3XP", xpLevel: "Minor", icon: "heart", target: 1, targetUnit: "day", imageTone: "warm" },

@@ -1,15 +1,19 @@
 import { el } from "../ui/dom.js";
 import { createButton } from "../ui/Button.js";
 import { continueAsGuest, getAuthState } from "../core/authStore.js";
+import { hasActivePlan } from "../core/store.js";
 
 /**
  * @param {{
  *  goNext: () => void,
- *  openAuth?: (mode: 'login'|'signup') => void
+ *  openAuth?: (mode: 'login'|'signup') => void,
+ *  enterMainApp?: () => void
  * }} api
  */
-export function createWelcomeView({ goNext, openAuth }) {
+export function createWelcomeView({ goNext, openAuth, enterMainApp }) {
   const auth = getAuthState();
+  const hasPlan = hasActivePlan();
+
   const image = el("img", {
     className: "welcome__image",
     attrs: {
@@ -20,30 +24,29 @@ export function createWelcomeView({ goNext, openAuth }) {
     }
   });
 
-  const actions = [
-    createButton({
-      label: "Continue as guest",
-      variant: "primary",
-      onClick: () => {
-        continueAsGuest();
-        goNext();
-      }
-    }),
-    createButton({
-      label: "Log in",
-      variant: "ghost",
-      onClick: () => openAuth?.("login")
-    }),
-    createButton({
-      label: "Create account",
-      variant: "ghost",
-      onClick: () => openAuth?.("signup")
-    })
-  ];
+  /** @type {HTMLElement[]} */
+  let actions = [];
 
-  if (auth.isAuthenticated) {
-    actions.length = 0;
-    actions.push(
+  if (hasPlan) {
+    actions = [
+      createButton({
+        label: "Continue my plan",
+        variant: "primary",
+        onClick: () => enterMainApp?.()
+      }),
+      createButton({
+        label: auth.isAuthenticated ? "Switch account" : "Log in",
+        variant: "ghost",
+        onClick: () => openAuth?.("login")
+      }),
+      createButton({
+        label: "Create account",
+        variant: "ghost",
+        onClick: () => openAuth?.("signup")
+      })
+    ];
+  } else if (auth.isAuthenticated) {
+    actions = [
       createButton({
         label: "Continue where I left off",
         variant: "primary",
@@ -54,8 +57,33 @@ export function createWelcomeView({ goNext, openAuth }) {
         variant: "ghost",
         onClick: () => openAuth?.("login")
       })
-    );
+    ];
+  } else {
+    actions = [
+      createButton({
+        label: "Continue as guest",
+        variant: "primary",
+        onClick: () => {
+          continueAsGuest();
+          goNext();
+        }
+      }),
+      createButton({
+        label: "Log in",
+        variant: "ghost",
+        onClick: () => openAuth?.("login")
+      }),
+      createButton({
+        label: "Create account",
+        variant: "ghost",
+        onClick: () => openAuth?.("signup")
+      })
+    ];
   }
+
+  const copy = hasPlan
+    ? "Welcome back. Pick up your plan, or sign in to sync across devices."
+    : "Ready to reset your life? Take a quick quiz and we'll create your personalized plan.";
 
   return el(
     "section",
@@ -69,7 +97,7 @@ export function createWelcomeView({ goNext, openAuth }) {
         el("h1", { className: "welcome__title", text: "Welcome to Ikigai" }),
         el("p", {
           className: "welcome__copy",
-          text: "Ready to reset your life? Take a quick quiz and we'll create your personalized plan."
+          text: copy
         }),
         el("div", { className: "welcome__actions" }, actions)
       ])

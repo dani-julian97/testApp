@@ -7,6 +7,7 @@ import {
   toggleHabitCompletion,
   isHabitDone,
   dayCompletionRatio,
+  getPlanDayNumber,
   addJournalEntry,
   addTask,
   toggleTask,
@@ -134,6 +135,12 @@ export function startMainApp(root) {
     await startApp(root);
   }
 
+  async function goToWelcomeAfterLogout() {
+    app.remove();
+    const { showWelcomeGate } = await import("../core/flowController.js");
+    showWelcomeGate(root);
+  }
+
   function showAccount() {
     const overlay = el("div", {
       className: "screen is-active",
@@ -143,7 +150,7 @@ export function startMainApp(root) {
       onBack: () => overlay.remove(),
       onSignedOut: async () => {
         overlay.remove();
-        await restartApp();
+        await goToWelcomeAfterLogout();
       }
     });
     overlay.append(view);
@@ -394,9 +401,19 @@ export function startMainApp(root) {
 
     renderFeed();
 
+    const duration = getPlanDuration(state);
+    const planDay = getPlanDayNumber();
+    const todayDaily = getDailyProgress(state, state.selectedDate);
+
     const page = el("div", { className: "fade-in" }, [
       el("div", { className: "home-head" }, [
-        el("h1", { className: "todo-title", text: "To-Do" }),
+        el("div", { className: "home-head__titles" }, [
+          el("h1", { className: "todo-title", text: "To-Do" }),
+          el("p", {
+            className: "home-plan-meta",
+            text: `${duration}-day plan · Day ${planDay} of ${duration} · Today ${todayDaily.completionPercentage}%`
+          })
+        ]),
         el("button", {
           className: "account-chip",
           type: "button",
