@@ -6,6 +6,11 @@ import { haptic } from "../core/haptics.js";
 
 const OPTIONS = [
   {
+    days: 5,
+    title: "5-day test",
+    copy: "A short trial to see what you can stick to — light and honest."
+  },
+  {
     days: 21,
     title: "21 days",
     copy: "Build momentum fast. Ideal for a focused reset sprint."
@@ -23,7 +28,7 @@ const OPTIONS = [
 ];
 
 export function createPlanLengthView({ onPlanStarted }) {
-  let selected = 90;
+  let selected = 21;
 
   const options = OPTIONS.map((opt) => {
     const node = el(
@@ -49,7 +54,7 @@ export function createPlanLengthView({ onPlanStarted }) {
   });
 
   const body = el("div", { className: "plan-length fade-in" }, [
-    el("h1", { className: "screen-title", text: "Choose your plan" }),
+    el("h1", { className: "screen-title", text: "Choose your path" }),
     el("p", {
       className: "screen-subtitle",
       text: "How long do you want to commit to your habits?"

@@ -108,12 +108,12 @@ export function createAuthView(opts = {}) {
 
     subtitle.textContent =
       mode === "signup"
-        ? "Save your plan and sync progress across devices."
+        ? "Save your path and sync progress across devices."
         : mode === "reset"
           ? "We’ll email you a link to choose a new password."
           : mode === "verify"
             ? "Open the confirmation email, tap the link (or enter a code if your email shows one), then continue here."
-            : "Log in to restore your Ikigai plan.";
+            : "Log in to restore your Ikigai path.";
 
     formFields.replaceChildren();
     if (mode === "signup") formFields.append(nameInput);

@@ -4,7 +4,7 @@ import { createShell } from "../ui/Shell.js";
 const MESSAGES = [
   "Calculating health metrics...",
   "Analyzing your habits...",
-  "Building your 90-day plan...",
+  "Building your path...",
   "Almost ready..."
 ];
 

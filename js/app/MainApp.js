@@ -20,6 +20,7 @@ import {
   getDailyProgress,
   getPlanDayCircles,
   getPlanDuration,
+  formatPathLabel,
   getPolygonValuesForDate,
   getOverallPlanCompletion,
   deriveAspectScores
@@ -411,7 +412,7 @@ export function startMainApp(root) {
           el("h1", { className: "todo-title", text: "To-Do" }),
           el("p", {
             className: "home-plan-meta",
-            text: `${duration}-day plan · Day ${planDay} of ${duration} · Today ${todayDaily.completionPercentage}%`
+            text: `${formatPathLabel(duration)} · Day ${planDay} of ${duration} · Today ${todayDaily.completionPercentage}%`
           })
         ]),
         el("button", {
@@ -451,7 +452,7 @@ export function startMainApp(root) {
         className: "plan-days",
         attrs: {
           role: "list",
-          "aria-label": `${duration}-day plan progress`
+          "aria-label": `${formatPathLabel(duration)} progress`
         }
       },
       circles.map((day) => {
@@ -539,7 +540,7 @@ export function startMainApp(root) {
       el("div", { className: "plan-progress-head" }, [
         el("div", {
           className: "plan-progress-head__label",
-          text: `${duration}-day plan`
+          text: formatPathLabel(duration)
         }),
         el("div", {
           className: "plan-progress-head__stat",
@@ -587,7 +588,7 @@ export function startMainApp(root) {
       ),
       el("h2", {
         className: "hint-label",
-        text: "Habits in this plan",
+        text: "Habits on this path",
         style: "font-size:1.1rem;color:#fff;margin:1.25rem 0 1rem;"
       }),
       el("div", { className: "habit-plan-list" }, habitSummaries)

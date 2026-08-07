@@ -13,7 +13,7 @@ import {
 import { updateProfile } from "../services/profile/profileService.js";
 import { isCloudEnabled } from "../lib/supabase/client.js";
 import { toAuthError, validateEmail, validatePassword } from "../services/auth/errors.js";
-import { getPlanDuration } from "../data/progress.js";
+import { getPlanDuration, formatPathLabel } from "../data/progress.js";
 import { haptic } from "../core/haptics.js";
 
 /**
@@ -65,7 +65,7 @@ export function createAccountView(opts = {}) {
     const rows = el("div", { className: "account-rows" }, [
       row("Status", auth.isAuthenticated ? "Registered" : "Guest"),
       row("Email", email),
-      row("Plan", app.planDays ? `${duration} days` : "Not started"),
+      row("Path", app.planDays ? formatPathLabel(duration) : "Not started"),
       row("Started", app.planStartDate || "—"),
       row("Current day", app.planDays ? String(planDay) : "—"),
       row(

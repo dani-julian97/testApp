@@ -30,7 +30,7 @@ export function createWelcomeView({ goNext, openAuth, enterMainApp }) {
   if (hasPlan) {
     actions = [
       createButton({
-        label: "Continue my plan",
+        label: "Continue my path",
         variant: "primary",
         onClick: () => enterMainApp?.()
       }),
@@ -82,8 +82,8 @@ export function createWelcomeView({ goNext, openAuth, enterMainApp }) {
   }
 
   const copy = hasPlan
-    ? "Welcome back. Pick up your plan, or sign in to sync across devices."
-    : "Ready to reset your life? Take a quick quiz and we'll create your personalized plan.";
+    ? "Welcome back. Pick up your path, or sign in to sync across devices."
+    : "Ready to reset your life? Take a quick quiz and we'll create your personalized path.";
 
   return el(
     "section",

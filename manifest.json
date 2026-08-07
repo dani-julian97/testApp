@@ -1,7 +1,7 @@
 {
   "name": "Ikigai",
   "short_name": "Ikigai",
-  "description": "Reset your life with a personalized 90-day habit plan.",
+  "description": "Reset your life with a personalized habit path.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#000000",

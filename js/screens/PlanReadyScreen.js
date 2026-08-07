@@ -30,10 +30,10 @@ export function createPlanReadyView({ onStartPlan } = {}) {
 
   const body = el("div", { className: "plan fade-in" }, [
     el("div", { className: "plan__logo", text: "I" }),
-    el("h1", { className: "screen-title", text: "Your Plan is Ready" }),
+    el("h1", { className: "screen-title", text: "Your path is ready" }),
     el("p", {
       className: "screen-subtitle",
-      text: "We've built your personalised complete reset plan for the next 90 days."
+      text: "We've built your personalised habit path. Next, choose how long you want to commit."
     }),
     el("div", { className: "plan__unlock" }, [
       el("span", { html: iconSvg("lock", { size: 14 }) }),
@@ -58,17 +58,17 @@ export function createPlanReadyView({ onStartPlan } = {}) {
         el("span", { text: "Days to reset" })
       ])
     ]),
-    el("h2", { className: "plan__access-title", text: "Get full access to" }),
+    el("h2", { className: "plan__access-title", text: "What you unlock" }),
     el("p", {
       className: "plan__access-copy",
-      text: "Everything you need for your full 90-day reset."
+      text: "Daily tracking, growth chart, and a clear path for your reset."
     })
   ]);
 
   return createShell({
     body,
     footer: createButton({
-      label: "Start My Plan",
+      label: "Choose my path",
       onClick: () => {
         markCompleted();
         haptic("success");

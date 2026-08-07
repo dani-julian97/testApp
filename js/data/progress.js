@@ -24,6 +24,13 @@ export function getPlanDuration(state) {
   return Number(state.planDays) || 21;
 }
 
+/** User-facing label — avoid “plan” (sounds like a paid subscription). */
+export function formatPathLabel(days) {
+  const n = Number(days) || 21;
+  if (n === 5) return "5-day test";
+  return `${n}-day path`;
+}
+
 export function getPlanStartKey(state) {
   return state.planStartDate || todayKey();
 }
