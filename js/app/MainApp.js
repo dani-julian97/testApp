@@ -35,6 +35,7 @@ import { createAccountView } from "../screens/AccountScreen.js";
 import { createAuthView } from "../screens/AuthScreen.js";
 import { getAuthState } from "../core/authStore.js";
 import { todayKey } from "../core/storage.js";
+import { formatAppVersion } from "../config/version.js";
 
 const TABS = [
   { id: "home", label: "Home", icon: "home" },
@@ -61,8 +62,13 @@ function weekDates(aroundKey) {
   });
 }
 
+function removeDockedChrome() {
+  document.querySelectorAll(".tabbar, .fab-add").forEach((node) => node.remove());
+}
+
 export function startMainApp(root) {
   clear(root);
+  removeDockedChrome();
   preloadHabitImages();
 
   const content = el("div", { className: "main-app__content" });
@@ -111,16 +117,48 @@ export function startMainApp(root) {
     }
   });
 
-  const app = el("div", { className: "main-app screen is-active" }, [
-    content,
-    tabbar,
-    fab
-  ]);
+  const app = el("div", { className: "main-app screen is-active" }, [content]);
   root.append(app);
+  // Dock to <body> so fixed bottom is the real viewport edge (not clipped by #app)
+  document.body.append(tabbar, fab);
+
+  function syncTabbarSafeArea() {
+    // Read computed safe-area; fall back on iOS when env() reports 0
+    const probe = document.createElement("div");
+    probe.style.cssText =
+      "position:fixed;visibility:hidden;padding-bottom:constant(safe-area-inset-bottom);padding-bottom:env(safe-area-inset-bottom,0px);";
+    document.body.appendChild(probe);
+    const safe = Number.parseFloat(getComputedStyle(probe).paddingBottom) || 0;
+    probe.remove();
+
+    const isIos = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const standalone =
+      window.navigator.standalone === true ||
+      window.matchMedia("(display-mode: standalone)").matches;
+    // Home-indicator phones need ~34px when Safari reports 0
+    const pad = safe > 0 ? safe : isIos || standalone ? 34 : 0;
+    tabbar.style.paddingBottom = `${pad}px`;
+    content.style.paddingBottom = `calc(3.75rem + ${pad}px)`;
+    fab.style.bottom = `calc(4.25rem + ${pad}px)`;
+  }
+
+  syncTabbarSafeArea();
+  window.addEventListener("resize", syncTabbarSafeArea);
+  window.visualViewport?.addEventListener("resize", syncTabbarSafeArea);
+  window.visualViewport?.addEventListener("scroll", syncTabbarSafeArea);
 
   let unsub = subscribe(() => {
     /* store already saved; render on explicit actions */
   });
+
+  function teardownMainChrome() {
+    window.removeEventListener("resize", syncTabbarSafeArea);
+    window.visualViewport?.removeEventListener("resize", syncTabbarSafeArea);
+    window.visualViewport?.removeEventListener("scroll", syncTabbarSafeArea);
+    removeDockedChrome();
+    unsub?.();
+    app.remove();
+  }
 
   function syncTabs() {
     const active = getState().mainTab;
@@ -131,13 +169,13 @@ export function startMainApp(root) {
   }
 
   async function restartApp() {
-    app.remove();
+    teardownMainChrome();
     const { startApp } = await import("../core/flowController.js");
     await startApp(root);
   }
 
   async function goToWelcomeAfterLogout() {
-    app.remove();
+    teardownMainChrome();
     const { showWelcomeGate } = await import("../core/flowController.js");
     showWelcomeGate(root);
   }
@@ -413,6 +451,10 @@ export function startMainApp(root) {
           el("p", {
             className: "home-plan-meta",
             text: `${formatPathLabel(duration)} · Day ${planDay} of ${duration} · Today ${todayDaily.completionPercentage}%`
+          }),
+          el("p", {
+            className: "home-version",
+            text: formatAppVersion()
           })
         ]),
         el("button", {
@@ -968,8 +1010,7 @@ export function startMainApp(root) {
 
   return {
     destroy() {
-      unsub?.();
-      app.remove();
+      teardownMainChrome();
     },
     render
   };

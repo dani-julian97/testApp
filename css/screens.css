@@ -670,7 +670,6 @@
 }
 
 /* ── Main app shell ──────────────────────────────────── */
-/* Avoid .screen transforms — they break fixed positioning on iOS. */
 .main-app.screen,
 .main-app.screen.is-active,
 .main-app.screen.is-back,
@@ -683,7 +682,10 @@
 
 .main-app {
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -700,6 +702,8 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* Leave room for fixed tabbar + home indicator */
+  padding-bottom: calc(3.75rem + var(--safe-bottom));
 }
 
 .main-app__page {
@@ -715,31 +719,44 @@
     calc(var(--safe-left) + var(--space-4));
 }
 
+/*
+ * Tab bar pinned to the real viewport bottom (body), same edge-to-edge
+ * idea as the top: background goes to the physical edge; icons sit above
+ * the home indicator via safe-area padding.
+ */
 .tabbar {
-  position: relative;
-  flex: 0 0 auto;
-  z-index: 20;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 10000;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0;
-  padding:
-    0.55rem 0.4rem
-    max(1.25rem, var(--safe-bottom));
-  background: #0c0c0c;
+  margin: 0;
+  padding-top: 0.5rem;
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+  /* Legacy iOS + modern safe area — background paints through this padding */
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: #000000;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  /* Solid extension under the bar — covers residual iOS home-indicator gaps */
-  box-shadow: 0 64px 0 0 #0c0c0c;
+  box-sizing: border-box;
 }
 
 .tabbar__item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  justify-content: flex-start;
+  gap: 0.15rem;
   color: rgba(255, 255, 255, 0.4);
   font-size: 0.65rem;
   font-weight: 500;
-  padding: 0.25rem;
+  padding: 0.2rem 0 0.45rem;
+  min-height: 3.1rem;
 }
 
 .tabbar__item svg {
@@ -1009,10 +1026,10 @@
 }
 
 .fab-add {
-  position: absolute;
+  position: fixed;
   right: calc(var(--safe-right) + 1.1rem);
-  bottom: calc(5.5rem + var(--safe-bottom));
-  z-index: 25;
+  bottom: calc(4.25rem + var(--safe-bottom));
+  z-index: 10001;
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -1872,8 +1889,16 @@
 .home-plan-meta {
   font-size: 0.82rem;
   color: var(--text-muted);
-  margin-bottom: var(--space-3);
+  margin-bottom: 0.15rem;
   line-height: 1.35;
+}
+
+.home-version {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  margin-bottom: var(--space-3);
 }
 
 .account-chip {
