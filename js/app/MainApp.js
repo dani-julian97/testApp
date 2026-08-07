@@ -113,8 +113,8 @@ export function startMainApp(root) {
 
   const app = el("div", { className: "main-app screen is-active" }, [
     content,
-    fab,
-    tabbar
+    tabbar,
+    fab
   ]);
   root.append(app);
 

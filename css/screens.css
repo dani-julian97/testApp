@@ -670,7 +670,7 @@
 }
 
 /* ── Main app shell ──────────────────────────────────── */
-/* Avoid .screen transforms — they break position:fixed and leave a bottom gap on iOS. */
+/* Avoid .screen transforms — they break fixed positioning on iOS. */
 .main-app.screen,
 .main-app.screen.is-active,
 .main-app.screen.is-back,
@@ -688,7 +688,6 @@
   flex-direction: column;
   width: 100%;
   height: 100%;
-  min-height: 100%;
   background:
     radial-gradient(ellipse 80% 40% at 50% -10%, rgba(60, 90, 60, 0.35), transparent 55%),
     #000;
@@ -696,7 +695,7 @@
 }
 
 .main-app__content {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
   display: flex;
@@ -712,37 +711,24 @@
   padding:
     calc(var(--safe-top) + var(--space-4))
     calc(var(--safe-right) + var(--space-4))
-    calc(5.75rem + var(--safe-bottom))
+    var(--space-4)
     calc(var(--safe-left) + var(--space-4));
 }
 
 .tabbar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
+  flex: 0 0 auto;
   z-index: 20;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0;
   padding:
     0.55rem 0.4rem
-    max(0.85rem, var(--safe-bottom));
+    max(1.25rem, var(--safe-bottom));
   background: #0c0c0c;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-}
-
-/* Paint any leftover strip under the bar (home indicator / Safari quirks) */
-.tabbar::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  height: max(48px, var(--safe-bottom));
-  background: #0c0c0c;
-  pointer-events: none;
+  /* Solid extension under the bar — covers residual iOS home-indicator gaps */
+  box-shadow: 0 64px 0 0 #0c0c0c;
 }
 
 .tabbar__item {
@@ -1025,7 +1011,8 @@
 .fab-add {
   position: absolute;
   right: calc(var(--safe-right) + 1.1rem);
-  bottom: calc(4.75rem + var(--safe-bottom));
+  bottom: calc(5.5rem + var(--safe-bottom));
+  z-index: 25;
   width: 52px;
   height: 52px;
   border-radius: 50%;
